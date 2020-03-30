@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 var ProfileSchema = new mongoose.Schema({
     name: {

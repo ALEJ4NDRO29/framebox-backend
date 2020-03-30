@@ -1,19 +1,19 @@
-const express = require('express');
-const router = express.Router();
+import express from 'express';
+import mongoose from 'mongoose';
 
-const mongoose = require('mongoose')
+const router = express.Router();
 const User = mongoose.model('User');
 
 router.post('/register', (req, res) => {
-    console.log(User);
-
-    var user = new User();
-
-    user.nickname = req.body.nickname;
-    user.email = req.body.email;
-
-    user.save();
     
+    var user = new User();
+    
+    user.nickname = req.body.user.nickname;
+    user.email = req.body.user.email;
+    
+    // user.save();
+    
+    console.log(user.nickname);
     return res.send(user)
 })
 
@@ -22,4 +22,4 @@ router.post('/login', (req, res) => {
     // return res.send(req.body.user)
 })
 
-module.exports = router;
+export default router;

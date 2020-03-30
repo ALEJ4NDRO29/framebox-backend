@@ -1,9 +1,10 @@
-const mongoose = require('mongoose');
-const uniqueValidator = require('mongoose-unique-validator');
+import mongoose from "mongoose";
+import uniqueValidator from "mongoose-unique-validator";
+
 
 var UserSchema = new mongoose.Schema({
     type: {type: mongoose.Schema.Types.ObjectId, ref: 'User_type'},
-    username: {
+    nickname: {
         type: String,
         index: true,
         unique: true,
@@ -25,5 +26,9 @@ var UserSchema = new mongoose.Schema({
 });
 
 UserSchema.plugin(uniqueValidator, { message: 'is already taken.' });
+
+UserSchema.method.setPassword = password => {
+    
+}
 
 mongoose.model('User', UserSchema)

@@ -1,19 +1,37 @@
 {
   "name": "backend",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "nodemon --exec babel-node bin/www.js",
+    "debug": "nodemon --inspect --exec babel-node bin/www.js",
+    "startold": "npm run build && node dist/bin/www --inspect-brk=1234",
+    "build": "rimraf dist/* && babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log --copy-files",
+    "dev": "babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log --watch"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "dist/*"
+    ]
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
+    "crypto": "^1.0.1",
     "debug": "~2.6.9",
     "dotenv": "^8.2.0",
     "express": "~4.16.1",
+    "express-jwt": "^5.3.1",
+    "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.9.6",
     "mongoose-unique-validator": "^2.0.3",
     "morgan": "~1.9.1",
     "passport": "^0.4.1",
     "passport-local": "^1.0.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-preset-env": "^1.7.0",
+    "rimraf": "^3.0.2"
   }
 }

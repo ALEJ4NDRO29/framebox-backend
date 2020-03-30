@@ -1,11 +1,12 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+import express from "express";
+import path from "path";
+import cookieParser from "cookie-parser";
+import logger from "morgan";
 
-var api = require('./routes/api');
+require('dotenv').config();
 
-require('dotenv').config()
+// import { config } from "dotenv";
+// config();
 
 var app = express();
 
@@ -15,10 +16,12 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/api', api);
-
 // Database / models
-require('./models');
+// require('./models');
+import './models'
+
+import routes from "./routes";
+app.use('/api', routes);
 
 /// catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -42,5 +45,8 @@ app.use(function (err, req, res, next) {
     });
 });
 
+export default app;
 
-module.exports = app;
+// module.exports = app;
+
+

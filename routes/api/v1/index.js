@@ -1,9 +1,9 @@
-// var express = require('express');
-
 import express from 'express';
 var router = express.Router();
 
+import auth from './auth';
 
-router.use('/auth', require('./auth'));
+router.use('/auth', auth);
 
-module.exports = router;
+// module.exports = router;
+export default router;

@@ -1,9 +1,13 @@
-var jwt = require('express-jwt');
-var secret = require('../config').secret;
+import jwt from 'express-jwt'
+import { secret } from "../config";
 
-function getTokenFromHeader(req){
+// var secret = require('../config').secret;
+// var secret = config.secret;
+
+
+function getTokenFromHeader(req) {
   if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Token' ||
-      req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+    req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
     return req.headers.authorization.split(' ')[1];
   }
 
@@ -18,4 +22,6 @@ var auth = {
   })
 };
 
-module.exports = auth;
+// module.exports = auth;
+
+export default auth;

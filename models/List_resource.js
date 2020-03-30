@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose';
 
 const List_resource = new mongoose.Schema({
     resource: {
