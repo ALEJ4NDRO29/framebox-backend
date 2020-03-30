@@ -1,8 +1,9 @@
-var express = require('express');
+// var express = require('express');
+
+import express from 'express';
 var router = express.Router();
 
-router.get('/', function (req, res) {
-    return res.json({ text: 'Hello World from api' });
-});
+
+router.use('/auth', require('./auth'));
 
 module.exports = router;
