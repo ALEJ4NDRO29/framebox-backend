@@ -1,5 +1,5 @@
 import jwt from 'express-jwt'
-import { secret } from "../config";
+import config from "../config";
 
 // var secret = require('../config').secret;
 // var secret = config.secret;
@@ -16,7 +16,7 @@ function getTokenFromHeader(req) {
 
 var auth = {
   required: jwt({
-    secret: secret,
+    secret: config.secret,
     userProperty: 'payload',
     getToken: getTokenFromHeader
   })

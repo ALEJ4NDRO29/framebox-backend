@@ -16,4 +16,4 @@ import './Resource';
 import './List_resource';
 import './List';
 
-console.log('Load DB Models');
+console.log('Load DB Models'.grey);

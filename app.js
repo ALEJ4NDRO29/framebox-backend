@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
+import 'colors';
 
 require('dotenv').config();
 
@@ -18,7 +19,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Database / models
 // require('./models');
-import './models'
+import './models';
+import './config/passport';
 
 import routes from "./routes";
 app.use('/api', routes);
@@ -33,14 +35,14 @@ app.use(function (req, res, next) {
 // development error handler
 // will print stacktrace
 app.use(function (err, req, res, next) {
-    console.log(err.stack);
+    console.log(err.stack.red);
 
     res.status(err.status || 500);
 
     res.json({
         'errors': {
             message: err.message,
-            error: err
+            error: err // TODO: DESACTIVAR EN PRODUCCIÓN 
         }
     });
 });
