@@ -5,5 +5,4 @@ import api from './api';
 
 router.use('/', api);
 
-
 export default router;

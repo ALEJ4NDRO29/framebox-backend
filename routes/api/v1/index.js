@@ -5,5 +5,4 @@ import auth from './auth';
 
 router.use('/auth', auth);
 
-// module.exports = router;
 export default router;

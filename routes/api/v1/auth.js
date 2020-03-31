@@ -8,13 +8,15 @@ const router = express.Router();
 const User = mongoose.model('User');
 
 router.get('/current', auth.required, (req, res, next) => {
-    User.findById(req.payload.id).then(user => {
-        if (!user) {
-            return res.sendStatus(401);
-        }
+    User.findById(req.payload.id)
+        .populate('type')
+        .then(user => {
+            if (!user) {
+                return res.sendStatus(401);
+            }
 
-        return res.json({ user: user.toAuthJson() });
-    }).catch(next);
+            return res.json({ user: user.toAuthJson() });
+        }).catch(next);
 });
 
 router.post('/register', async (req, res, next) => {

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 // 'mongodb://localhost/framebox' process.env.DH_HOST
-mongoose.connect(process.env.DH_HOST || 'mongodb://localhost/framebox', {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect(process.env.DH_HOST || 'mongodb://localhost/framebox', { useNewUrlParser: true, useUnifiedTopology: true });
 mongoose.set('useCreateIndex', true);
 
 if (!process.env.PRODUCTION) {
@@ -17,3 +17,41 @@ import './List_resource';
 import './List';
 
 console.log('Load DB Models'.grey);
+
+// Create default data
+const User_type = mongoose.model('User_type');
+const User = mongoose.model('User');
+
+(async function () {
+    console.log("Check Admin Type".grey);
+
+    var adminType = await User_type.findOne({ name: 'Admin' });
+
+    if (!adminType) {
+        console.log("Create Admin Type".grey);
+
+        adminType = new User_type();
+        adminType.name = 'Admin';
+
+        await adminType.save();
+    }
+
+    console.log("Check AdminUser".grey);
+
+    var adminUser = await User.findOne({nickname: 'Admin'});
+
+    if (!adminUser) {
+        console.log('Create Admin User'.gray);
+        adminUser = new User();
+
+        // TODO : configurable
+        adminUser.nickname = process.env.ADMIN_NICKNAME || 'admin';
+        adminUser.email =  process.env.ADMIN_EMAIL || 'admin@admin.com';
+        adminUser.type = adminType;
+        adminUser.setPassword(process.env.ADMIN_PASSWORD || 'admin');
+        adminUser.createProfile();
+
+        await adminUser.save();
+    }
+
+})()

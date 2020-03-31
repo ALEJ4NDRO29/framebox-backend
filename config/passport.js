@@ -10,13 +10,15 @@ passport.use(new LocalStrategy({
     passwordField: 'user[password]'
 }, function (email, password, done) {
     console.log('Validate user'.blue);
-    
-    User.findOne({ email: email }).then(function (user) {
-        console.log("Found user: ".blue + email);
-        
-        if (!user || !user.validPassword(password)) {
-            return done(null, false, { errors: { 'email or password': 'is invalid' } });
-        }
-        return done(null, user);
-    }).catch(done);
+
+    User.findOne({ email: email })
+        .populate('type')
+        .then(function (user) {
+            console.log("Found user: ".blue + email);
+
+            if (!user || !user.validPassword(password)) {
+                return done(null, false, { errors: { 'email or password': 'is invalid' } });
+            }
+            return done(null, user);
+        }).catch(done);
 }));
