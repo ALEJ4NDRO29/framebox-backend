@@ -77,4 +77,10 @@ UserSchema.methods.toAuthJson = function () {
     return user;  
 }
 
+UserSchema.methods.isAdmin = function () {
+    var isAdmin = this.type != null && this.type.name === 'Admin';
+    console.log('isAdmin', isAdmin);
+    return isAdmin;
+}
+
 mongoose.model('User', UserSchema)

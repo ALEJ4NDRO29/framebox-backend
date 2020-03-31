@@ -2,7 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import passport from 'passport';
 
-import auth from '../../auth';
+import auth from '../../authJwt';
 
 const router = express.Router();
 const User = mongoose.model('User');

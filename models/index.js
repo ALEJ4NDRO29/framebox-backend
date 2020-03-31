@@ -27,6 +27,7 @@ const User = mongoose.model('User');
 
     var adminType = await User_type.findOne({ name: 'Admin' });
 
+    // Comprobar y crear rol Admin
     if (!adminType) {
         console.log("Create Admin Type".grey);
 
@@ -40,11 +41,11 @@ const User = mongoose.model('User');
 
     var adminUser = await User.findOne({nickname: process.env.ADMIN_NICKNAME || 'admin'});
 
+    // Crear usuario admin si no existe
     if (!adminUser) {
         console.log('Create Admin User'.gray);
         adminUser = new User();
 
-        // TODO : configurable
         adminUser.nickname = process.env.ADMIN_NICKNAME || 'admin';
         adminUser.email =  process.env.ADMIN_EMAIL || 'admin@admin.com';
         adminUser.type = adminType;
@@ -53,5 +54,4 @@ const User = mongoose.model('User');
 
         await adminUser.save();
     }
-
 })()

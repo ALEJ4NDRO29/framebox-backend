@@ -1,10 +1,6 @@
 import jwt from 'express-jwt'
 import config from "../config";
 
-// var secret = require('../config').secret;
-// var secret = config.secret;
-
-
 function getTokenFromHeader(req) {
   if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Token' ||
     req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
@@ -21,7 +17,5 @@ var auth = {
     getToken: getTokenFromHeader
   })
 };
-
-// module.exports = auth;
 
 export default auth;
