@@ -38,7 +38,7 @@ const User = mongoose.model('User');
 
     console.log("Check AdminUser".grey);
 
-    var adminUser = await User.findOne({nickname: 'Admin'});
+    var adminUser = await User.findOne({nickname: process.env.ADMIN_NICKNAME || 'admin'});
 
     if (!adminUser) {
         console.log('Create Admin User'.gray);
