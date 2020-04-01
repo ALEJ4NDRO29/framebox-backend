@@ -43,7 +43,7 @@ const User = mongoose.model('User');
 
     // Crear usuario admin si no existe
     if (!adminUser) {
-        console.log('Create Admin User'.gray);
+        console.log('Create Admin User'.grey);
         adminUser = new User();
 
         adminUser.nickname = process.env.ADMIN_NICKNAME || 'admin';
