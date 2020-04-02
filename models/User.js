@@ -83,4 +83,12 @@ UserSchema.methods.isAdmin = function () {
     return isAdmin;
 }
 
+UserSchema.methods.updateProfile = function (profile, updateData) {
+    profile.name = updateData.name;
+    profile.bio = updateData.bio;
+    profile.website = updateData.website;
+
+    return profile.save();
+}
+
 mongoose.model('User', UserSchema)

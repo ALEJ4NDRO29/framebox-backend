@@ -64,7 +64,7 @@ router.post('/type/set/:nickname', auth.required, async (req, res, next) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        var type = await User_type.findOneAndDelete({ name: req.body.userType.name });
+        var type = await User_type.findOne({ name: req.body.userType.name });
         if (!type) {
             return res.status(404).json({ error: 'Type not found' });
         }
