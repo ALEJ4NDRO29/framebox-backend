@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { mongo } from 'mongoose';
 
 // 'mongodb://localhost/framebox' process.env.DH_HOST
 mongoose.connect(process.env.DH_HOST || 'mongodb://localhost/framebox', { useNewUrlParser: true, useUnifiedTopology: true });
@@ -22,7 +22,16 @@ console.log('Load DB Models'.grey);
 const User_type = mongoose.model('User_type');
 const User = mongoose.model('User');
 
-(async function () {
+const Resource_type = mongoose.model('Resource_type');
+
+checkUsers();
+
+checkResType('Movie');
+checkResType('Serie');
+checkResType('Music');
+checkResType('Videogame');
+
+async function checkUsers() {
     console.log("Check Admin Type".grey);
 
     var adminType = await User_type.findOne({ name: 'Admin' });
@@ -53,5 +62,16 @@ const User = mongoose.model('User');
         adminUser.createProfile();
 
         await adminUser.save();
+    }  
+}
+
+async function checkResType(typeName) {
+    console.log(`Check ${typeName} type`.grey);
+    var type = await Resource_type.findOne({name: typeName});
+    if (!type) {
+        console.log(`Create ${typeName} type`.grey);
+        type = new Resource_type();
+        type.name = typeName;
+        type.save();
     }
-})()
+}
