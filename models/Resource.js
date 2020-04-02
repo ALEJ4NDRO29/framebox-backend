@@ -44,7 +44,7 @@ ResourceSchema.methods.setType = function (type) {
     this.type = type;
 };
 
-ResourceSchema.methods.toJSON = function () {
+ResourceSchema.methods.toAdminJSON = function () {
     return {
         slug: this.slug,
         type: this.type.toJSON(),
@@ -53,6 +53,16 @@ ResourceSchema.methods.toJSON = function () {
         releasedAt: this.releasedAt,
         createdAt: this.createdAt,
         updatedAt: this.updatedAt
+    }
+}
+
+ResourceSchema.methods.toJSON = function () {
+    return {
+        slug: this.slug,
+        type: this.type.toJSON(),
+        title: this.title,
+        description: this.description,
+        releasedAt: this.releasedAt,
     }
 }
 

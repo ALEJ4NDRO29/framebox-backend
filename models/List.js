@@ -11,6 +11,10 @@ const List = new mongoose.Schema({
     date: {
         type: Date
     },
+    private: {
+        type: Boolean,
+        default: false
+    },
     content: [{type: mongoose.Schema.Types.ObjectId, ref: 'List_resource'}]
 });
 

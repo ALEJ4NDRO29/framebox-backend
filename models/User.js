@@ -23,9 +23,9 @@ var UserSchema = new mongoose.Schema({
         match: [/^[a-z]+[a-z0-9._]+@[a-z]+\.[a-z.]{2,5}$/, 'is invalid']
     },
     hash: String,
-    profile: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Profile', 
+    profile: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Profile',
         required: true
     },
     salt: String
@@ -69,12 +69,12 @@ UserSchema.methods.toAuthJson = function () {
         email: this.email,
         jwt: this.generateJWT()
     }
-    
-    if(this.type) {
+
+    if (this.type) {
         user.type = this.type.name;
     }
 
-    return user;  
+    return user;
 }
 
 UserSchema.methods.isAdmin = function () {

@@ -3,9 +3,11 @@ import mongoose from 'mongoose';
 import passport from 'passport';
 
 import auth from '../../authJwt';
+import { IsAdminUser } from '../../../utils/UsersUtils';
 
 const router = express.Router();
 const User = mongoose.model('User');
+const User_type = mongoose.model('User_type');
 
 router.get('/current', auth.required, (req, res, next) => {
     User.findById(req.payload.id)
@@ -51,5 +53,29 @@ router.post('/login', (req, res, next) => {
         }
     })(req, res, next);
 });
+
+router.post('/type/set/:nickname', auth.required, async (req, res, next) => {
+    try {
+        if (!await IsAdminUser(req.payload.id))
+            return res.status(401).json({ error: 'Unauthorized' });
+
+        var user = await User.findOne({ nickname: req.params.nickname });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        var type = await User_type.findOneAndDelete({ name: req.body.userType.name });
+        if (!type) {
+            return res.status(404).json({ error: 'Type not found' });
+        }
+
+        user.type = type;
+        await user.save();
+
+        return res.sendStatus(200);
+    } catch (e) {
+        next(e);
+    }
+})
 
 export default router;

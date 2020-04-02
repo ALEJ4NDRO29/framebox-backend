@@ -10,6 +10,9 @@ const Resource_type = mongoose.model('Resource_type');
 // CREAR TIPO DE RECURSO (PELÍCULA, SERIE...)
 router.post('/types', auth.required, async (req, res, next) => {
     try {
+        if (!await IsAdminUser(req.payload.id))
+            return res.status(401).json({ error: 'Unauthorized' });
+
         var type = new Resource_type();
         type.name = req.body.resourceType.name;
 
@@ -104,6 +107,43 @@ router.get('/slug/:slug', async (req, res, next) => {
     }
 });
 
+router.put('/slug/:slug', auth.required, async (req, res, next) => {
+    try {
+        if (!await IsAdminUser(req.payload.id))
+            return res.status(401).json({ error: 'Unauthorized' });
+
+        var resource = await Resource.findOne({ slug: req.params.slug }).populate('type');
+
+        if (!resource) {
+            return res.sendStatus(404).json({ error: "Resource not found" });
+        }
+
+        // Actualizar tipo
+        if (req.body.resource.type) {
+            var type = await Resource_type.findOne({ name: req.body.resource.type });
+            if (!type) {
+                return res.sendStatus(404).json({ error: "Type not found" });
+            }
+
+            resource.type = type;
+        }
+
+        if (req.body.resource.title) {
+            resource.title = req.body.resource.title;
+        }
+
+        resource.description = req.body.resource.description;
+
+        resource.releasedAt = req.body.resource.releasedAt;
+
+        await resource.save();
+
+        return res.send(resource);
+    } catch (e) {
+        next(e);
+    }
+});
+
 router.delete('/slug/:slug', auth.required, async (req, res, next) => {
     try {
         if (!await IsAdminUser(req.payload.id))
@@ -114,7 +154,6 @@ router.delete('/slug/:slug', auth.required, async (req, res, next) => {
             return res.sendStatus(404);
         }
 
-        console.log(resource.toJSON());
         await resource.remove();
 
         return res.sendStatus(200);
