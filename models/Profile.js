@@ -21,6 +21,11 @@ var ProfileSchema = new mongoose.Schema({
     }]
 })
 
+ProfileSchema.methods.isViewed = function (resourceId) {
+    var found = this.viewed_content.find(listResource => listResource.resource._id.toString() == resourceId._id.toString());
+    return typeof found !== "undefined";
+}
+
 ProfileSchema.methods.toJSON = function () {
     return ({
         name: this.name,

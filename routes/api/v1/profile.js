@@ -7,13 +7,9 @@ const router = express.Router();
 const User = mongoose.model('User');
 const Resource = mongoose.model('Resource');
 const List_resource = mongoose.model('List_resource');
-// UPDATE / DELETE
-// User -> Solo podrá actualizar su perfil
-// Admin -> Podrá actualizar todos los perfiles
+const Profile = mongoose.model('Profile');
 
-// DELETE
-// Eliminar perfil y ¿usuario?
-
+// ADMIN ACTUALIZA USUARIO
 router.put('/nickname/:nickname', auth.required, async (req, res, next) => {
     try {
         if (!await IsAdminUser(req.payload.id))
@@ -38,6 +34,7 @@ router.put('/nickname/:nickname', auth.required, async (req, res, next) => {
     }
 });
 
+// ACTUALIZAR USUARIO ACTUAL
 router.put('/me', auth.required, async (req, res, next) => {
     try {
         var user = await User.findById(req.payload.id).populate('profile');
@@ -55,6 +52,7 @@ router.put('/me', auth.required, async (req, res, next) => {
     }
 });
 
+// ADMIN ELIMINA USUARIO
 router.delete('/nickname/:nickname', auth.required, async (req, res, next) => {
     try {
         if (!await IsAdminUser(req.payload.id))
@@ -73,6 +71,7 @@ router.delete('/nickname/:nickname', auth.required, async (req, res, next) => {
     }
 });
 
+// ELIMINAR USUARIO ACTUAL
 router.delete('/me', auth.required, async (req, res, next) => {
     try {
         var user = await User.findById(req.payload.id).populate('profile');
@@ -87,28 +86,62 @@ router.delete('/me', auth.required, async (req, res, next) => {
     }
 });
 
-router.post('/nickname/:nickname/viewed', auth.required, async (req, res, next) => {
+// ADMIN LISTADO VISTO
+router.get('/nickname/:nickname/viewed', auth.required, async (req, res, next) => {
     try {
         if (!await IsAdminUser(req.payload.id))
             return res.status(401).json({ error: 'Unauthorized' });
 
         var user = await User.findOne({ nickname: req.params.nickname })
-            .populate('profile')
-            .populate('viewed_content');
-
-        var profile = user.profile;
+            .populate({
+                path: 'profile',
+                populate: {
+                    path: 'viewed_content',
+                    populate: {
+                        path: 'resource',
+                        populate: 'type',
+                        select: ['title', 'slug', 'type', 'releasedAt'],
+                    }
+                }
+            });
 
         if (!user) {
             return res.sendStatus(404);
         }
 
-        // TODO Add view
-        return res.send(profile.viewed_content);
+        var viewed_content = user.profile.viewed_content;
+        res.send({ viewed_content })
+    } catch (e) {
+        next(e);
+    }
+})
+
+// LISTADO VISTO USUARIO ACTUAL
+router.get('/me/viewed', auth.required, async (req, res, next) => {
+    try {
+        // TODO PAGINATE
+        var user = await User.findById(req.payload.id)
+            .populate({
+                path: 'profile',
+                populate: {
+                    path: 'viewed_content',
+                    populate: {
+                        path: 'resource',
+                        populate: 'type',
+                        select: ['title', 'slug', 'type', 'releasedAt'],
+                    }
+                }
+            });
+        var profile = user.profile;
+        var viewed_content = profile.viewed_content;
+
+        return res.send({ viewed_content });
     } catch (e) {
         next(e);
     }
 });
 
+// AÑADIR VISTO USUARIO ACTUAL
 router.post('/me/viewed', auth.required, async (req, res, next) => {
     try {
         if (!req.body.resource || !req.body.resource.slug) {
@@ -116,8 +149,12 @@ router.post('/me/viewed', auth.required, async (req, res, next) => {
         }
 
         var user = await User.findById(req.payload.id)
-            .populate('profile')
-            .populate('viewed_content');
+            .populate({
+                path: 'profile',
+                populate: {
+                    path: 'viewed_content'
+                }
+            });
 
         var resource = await Resource.findOne({ slug: req.body.resource.slug });
         if (!resource) {
@@ -125,26 +162,174 @@ router.post('/me/viewed', auth.required, async (req, res, next) => {
         }
 
         var profile = user.profile;
-        var viewed_content = profile.viewed_content;
+        var viewed = profile.isViewed(resource);
 
-        // console.log(typeof viewed_content);
-        
-        // var find = await viewed_content.find({ resource: resource });
+        if (!viewed) {
+            var viewed_content = profile.viewed_content;
 
-        console.log('viewed_content', viewed_content);
-        // console.log('find', find);
+            console.log('viewed_content', viewed_content);
+            // console.log('find', find);
 
-        var list_resource = new List_resource();
-        list_resource.resource = resource;
-        // await list_resource.save();
-        
-        viewed_content.push(list_resource);
+            var list_resource = new List_resource();
+            list_resource.resource = resource;
+            await list_resource.save();
 
-        // TODO 
+            viewed_content.push(list_resource);
+
+            await profile.save();
+        } else {
+            console.log('Was already seen');
+        }
+
         return res.send(profile);
     } catch (e) {
         next(e);
     }
 });
+
+// ADMIN AÑADE VISTO
+router.post('/nickname/:nickname/viewed', auth.required, async (req, res, next) => {
+    try {
+        if (!await IsAdminUser(req.payload.id))
+            return res.status(401).json({ error: 'Unauthorized' });
+
+        var user = await User.findOne({ nickname: req.params.nickname })
+            .populate({
+                path: 'profile',
+                populate: {
+                    path: 'viewed_content',
+                    populate: {
+                        path: 'resource',
+                        populate: 'type',
+                        select: ['title', 'slug', 'type', 'releasedAt'],
+                    }
+                }
+            });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        var resource = await Resource.findOne({ slug: req.body.resource.slug });
+        if (!resource) {
+            return res.status(404).json({ error: 'Resource not found' });
+        }
+
+        var profile = user.profile;
+        var viewed = profile.isViewed(resource);
+
+        if (!viewed) {
+            var viewed_content = profile.viewed_content;
+
+            var list_resource = new List_resource();
+            list_resource.resource = resource;
+            await list_resource.save();
+
+            viewed_content.push(list_resource);
+
+            await profile.save();
+        } else {
+            console.log('Was already seen');
+        }
+
+        return res.send({ viewed_content });
+    } catch (e) {
+        next(e);
+    }
+});
+
+// ELIMINAR VISTO USUARIO ACTUAL
+router.delete('/me/viewed', auth.required, async (req, res, next) => {
+    try {
+        if (!req.body.resource || !req.body.resource.slug) {
+            return res.sendStatus(400);
+        }
+
+        var user = await User.findById(req.payload.id).populate({
+            path: 'profile',
+            populate: {
+                path: 'viewed_content',
+            }
+        });
+        var profile = user.profile;
+
+        // TODO: REUTILIZABLE
+        var selectedResource = await Resource.findOne({ slug: req.body.resource.slug });
+        if (!selectedResource) {
+            return res.sendStatus(404);
+        }
+
+        var viewed_content = profile.viewed_content;
+
+        var selectedViewed = viewed_content.find(element => element.resource._id.toString() === selectedResource._id.toString());
+
+        if (selectedViewed) {
+            await Profile.updateOne(
+                { _id: profile._id }, {
+                "$pull": {
+                    "viewed_content": selectedViewed._id
+                }
+            });
+
+            await selectedViewed.remove();
+            await profile.save();
+        } else {
+            console.log('Was not seen');
+        }
+        return res.send({viewed_content});
+    } catch (e) {
+        next(e);
+    }
+});
+
+
+// ADMIN ELIMINA VISTO
+router.delete('/nickname/:nickname/viewed', auth.required, async (req, res, next) => {
+    try {
+        if (!await IsAdminUser(req.payload.id))
+            return res.status(401).json({ error: 'Unauthorized' });
+
+        var user = await User.findOne({ nickname: req.params.nickname })
+            .populate({
+                path: 'profile',
+                populate: {
+                    path: 'viewed_content'
+                }
+            });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        var selectedResource = await Resource.findOne({ slug: req.body.resource.slug });
+        if (!selectedResource) {
+            return res.status(404).json({error: 'Resource not found'});
+        }
+
+        var profile = user.profile;
+        var viewed_content = profile.viewed_content;
+
+        var selectedViewed = viewed_content.find(element => element.resource._id.toString() === selectedResource._id.toString());
+
+        if (selectedViewed) {
+            await Profile.updateOne(
+                { _id: profile._id }, {
+                "$pull": {
+                    "viewed_content": selectedViewed._id
+                }
+            });
+
+            await selectedViewed.remove();
+            await profile.save();
+        } else {
+            console.log('Was not seen');
+        }
+
+        return res.send({viewed_content})
+    } catch (e) {
+        next(e);
+    }
+});
+
 
 export default router;

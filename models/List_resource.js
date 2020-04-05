@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const List_resource = new mongoose.Schema({
+const List_resourceSchema = new mongoose.Schema({
     resource: {
         type: mongoose.Schema.Types.ObjectId, ref: 'Resource'
     }
@@ -9,4 +9,11 @@ const List_resource = new mongoose.Schema({
     usePushEach: true
 });
 
-mongoose.model('List_resource', List_resource);
+List_resourceSchema.methods.toJSON = function () {
+    return {
+        resource: this.resource,
+        createdAt: this.createdAt
+    }
+}
+
+mongoose.model('List_resource', List_resourceSchema);
