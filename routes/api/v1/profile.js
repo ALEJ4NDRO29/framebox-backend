@@ -152,7 +152,12 @@ router.post('/me/viewed', auth.required, async (req, res, next) => {
             .populate({
                 path: 'profile',
                 populate: {
-                    path: 'viewed_content'
+                    path: 'viewed_content',
+                    populate: {
+                        path: 'resource',
+                        populate: 'type',
+                        select: ['title', 'slug', 'type', 'releasedAt'],
+                    }
                 }
             });
 
@@ -164,9 +169,9 @@ router.post('/me/viewed', auth.required, async (req, res, next) => {
         var profile = user.profile;
         var viewed = profile.isViewed(resource);
 
-        if (!viewed) {
-            var viewed_content = profile.viewed_content;
+        var viewed_content = profile.viewed_content;
 
+        if (!viewed) {
             console.log('viewed_content', viewed_content);
             // console.log('find', find);
 
@@ -181,7 +186,7 @@ router.post('/me/viewed', auth.required, async (req, res, next) => {
             console.log('Was already seen');
         }
 
-        return res.send(profile);
+        return res.send({ viewed_content });
     } catch (e) {
         next(e);
     }
@@ -218,8 +223,8 @@ router.post('/nickname/:nickname/viewed', auth.required, async (req, res, next) 
         var profile = user.profile;
         var viewed = profile.isViewed(resource);
 
+        var viewed_content = profile.viewed_content;
         if (!viewed) {
-            var viewed_content = profile.viewed_content;
 
             var list_resource = new List_resource();
             list_resource.resource = resource;
@@ -263,20 +268,28 @@ router.delete('/me/viewed', auth.required, async (req, res, next) => {
 
         var selectedViewed = viewed_content.find(element => element.resource._id.toString() === selectedResource._id.toString());
 
+        var tmpProfile;
         if (selectedViewed) {
-            await Profile.updateOne(
+            tmpProfile = await Profile.findOneAndUpdate(
                 { _id: profile._id }, {
                 "$pull": {
                     "viewed_content": selectedViewed._id
                 }
-            });
+            },
+                { new: true }
+            );
 
             await selectedViewed.remove();
             await profile.save();
         } else {
             console.log('Was not seen');
         }
-        return res.send({viewed_content});
+
+        if (tmpProfile) {
+            viewed_content = tmpProfile.viewed_content;
+        }
+
+        return res.send({ viewed_content }); // FIXME : viewed_content No se actualiza al ser borrado
     } catch (e) {
         next(e);
     }
@@ -293,17 +306,19 @@ router.delete('/nickname/:nickname/viewed', auth.required, async (req, res, next
             .populate({
                 path: 'profile',
                 populate: {
-                    path: 'viewed_content'
+                    path: 'viewed_content',
+                    populate: 'type',
+                    select: ['title', 'slug', 'type', 'releasedAt'],
                 }
             });
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        
+
         var selectedResource = await Resource.findOne({ slug: req.body.resource.slug });
         if (!selectedResource) {
-            return res.status(404).json({error: 'Resource not found'});
+            return res.status(404).json({ error: 'Resource not found' });
         }
 
         var profile = user.profile;
@@ -325,11 +340,24 @@ router.delete('/nickname/:nickname/viewed', auth.required, async (req, res, next
             console.log('Was not seen');
         }
 
-        return res.send({viewed_content})
+        return res.send({ viewed_content })
     } catch (e) {
         next(e);
     }
 });
 
+// PROFILE DE UN USUARIO
+router.get('/get/:nickname', async (req, res, next) => {
+    try {
+        var user = await User.findOne({ nickname: req.params.nickname }).populate({
+            path: 'profile'
+        });
+
+        var profile = user.profile;
+        return res.send({ profile: profile.toDetailsJSON() });
+    } catch (e) {
+        next(e);
+    }
+})
 
 export default router;

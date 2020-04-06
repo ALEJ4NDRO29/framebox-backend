@@ -15,6 +15,12 @@ var auth = {
     secret: config.secret,
     userProperty: 'payload',
     getToken: getTokenFromHeader
+  }),
+  optional: jwt({
+    secret: config.secret,
+    userProperty: 'payload',
+    credentialsRequired: false,
+    getToken: getTokenFromHeader
   })
 };
 

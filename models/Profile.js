@@ -36,4 +36,19 @@ ProfileSchema.methods.toJSON = function () {
     });
 }
 
+ProfileSchema.methods.toDetailsJSON = function () {
+    return ({
+        name: this.name,
+        bio: this.bio,
+        website: this.website,
+        status: this.status,
+        viewed_content: {
+            size: this.viewed_content.length
+        },
+        lists: {
+            size: this.lists.length
+        }
+    });
+}
+
 mongoose.model('Profile', ProfileSchema);

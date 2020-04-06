@@ -3,6 +3,7 @@ import mongoose, { mongo } from 'mongoose';
 // 'mongodb://localhost/framebox' process.env.DH_HOST
 mongoose.connect(process.env.DH_HOST || 'mongodb://localhost/framebox', { useNewUrlParser: true, useUnifiedTopology: true });
 mongoose.set('useCreateIndex', true);
+mongoose.set('useFindAndModify', false);
 
 if (!process.env.PRODUCTION) {
     mongoose.set('debug', true)
