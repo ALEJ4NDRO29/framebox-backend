@@ -56,7 +56,7 @@ ListSchema.methods.toJSON = function () {
         name: this.name,
         description: this.description,
         owner: {
-            nickname: this.owner.owner.nickname
+            nickname: this.owner.owner.nickname // FIXME
         },
         private: this.private,
         content: this.content,

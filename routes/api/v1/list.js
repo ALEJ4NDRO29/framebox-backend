@@ -8,6 +8,8 @@ const List = mongoose.model('List');
 const Resource = mongoose.model('Resource');
 const List_resource = mongoose.model('List_resource');
 
+// TODO : ADMIN CREA LISTADO A USUARIO
+
 // CREATE LIST CURRENT USER
 router.post('/me', auth.required, async (req, res, next) => {
     try {
@@ -37,6 +39,49 @@ router.post('/me', auth.required, async (req, res, next) => {
     }
 });
 
+router.delete('/remove/:slug', auth.required, async (req, res, next) => {
+    try {
+        var user = await User.findById(req.payload.id, { profile: 1, owner: 1, type: 1 })
+            .populate('type')
+            .populate({
+                path: 'profile',
+                select: 'lists',
+            });
+
+        var list = await List.findOne({ slug: req.params.slug })
+            .populate({
+                path: 'owner'
+            })
+            .populate({
+                path: 'content'
+            });
+
+        if (!list) {
+            return res.sendStatus(404);
+        }
+
+        // Comprobar permisos
+        if (!user.type || user.type.name !== 'Admin') {
+            var listOwnerId = list.owner._id.toString()
+            var currentUserProfileId = user.profile._id.toString();
+
+            if (listOwnerId !== currentUserProfileId) {
+                return res.sendStatus(403);
+            }
+        }
+
+        var toRemoveOriginal = list.content;
+        var toRemove = toRemoveOriginal.map(o => o._id)
+
+        await List_resource.deleteMany({ _id: { $in: toRemove } });
+        await list.remove();
+
+        return res.sendStatus(200);
+    } catch (e) {
+        next(e);
+    }
+});
+
 // LISTAS DEL USUARIO LOGUEADO
 router.get('/me', auth.required, async (req, res, next) => {
     try {
@@ -44,7 +89,10 @@ router.get('/me', auth.required, async (req, res, next) => {
             path: 'profile',
             populate: {
                 path: 'lists',
-                select: '-_id -owner -content -createdAt -updatedAt'
+                select: '-_id -content -createdAt -updatedAt',
+                populate: {
+                    path: 'owner'
+                }
             }
         });
 
@@ -123,33 +171,34 @@ router.get('/get/:slug', auth.optional, async (req, res, next) => {
 });
 
 // AÑADIR A LISTA
-router.post('/add/:slug', auth.required, async (req, res, next) => {
+router.post('/content/:slug', auth.required, async (req, res, next) => {
     try {
         // AÑADIR SI owner O ADMIN 
         if (!req.body.resource || !req.body.resource.slug) {
             return res.sendStatus(400);
         }
 
-        var user = await User.findById(req.payload.id, {profile: 1, owner:1, type: 1})
+        // TODO: REUTILIZABLE
+        var user = await User.findById(req.payload.id, { profile: 1, owner: 1, type: 1 })
             .populate('type')
             .populate({
                 path: 'profile',
                 select: 'lists',
-                // populate: {
-                //     path: 'lists',
-                // }
             });
 
         // Buscar listado
         var list = await List.findOne({ slug: req.params.slug })
-            // .populate({
-            //     path: 'owner'
-            // })
+            .populate({
+                path: 'owner', // Profile
+                populate: {
+                    path: 'owner',
+                    select: 'nickname'
+                }
+            })
             .populate({
                 path: 'content',
                 populate: {
                     path: 'resource',
-                    // select: '_id'
                 }
             });
 
@@ -165,19 +214,19 @@ router.post('/add/:slug', auth.required, async (req, res, next) => {
         var profile = user.profile;
 
         // Comprobar si es usuario admin o es del usuario logueado
-        if(!user.type || user.type.name !== 'Admin') {
+        if (!user.type || user.type.name !== 'Admin') {
             var userLists = profile.lists;
             // console.log('userLists', userLists);
 
             var result = userLists.findIndex(currentList => {
                 return currentList.toString() === list._id.toString()
             });
-            
-            if (result === -1) { 
+
+            if (result === -1) {
                 // Esa lista no es del usuario logueado
                 return res.sendStatus(403);
             }
-        } 
+        }
 
         var actualContent = list.content;
 
@@ -196,16 +245,16 @@ router.post('/add/:slug', auth.required, async (req, res, next) => {
             console.log('Was already on the list');
         }
 
-        return res.send(actualContent);
+        return res.send({ list });
     } catch (e) {
         next(e);
     }
 });
 
 // ELIMINAR DE LISTA
-router.delete('/remove/:slug', auth.required, async (req, res, next) => {
+router.delete('/content/:slug', auth.required, async (req, res, next) => {
     try {
-        if (!req.body.resource.slug) {
+        if (!req.body.resource || !req.body.resource.slug) {
             return res.sendStatus(400);
         }
 
@@ -213,17 +262,85 @@ router.delete('/remove/:slug', auth.required, async (req, res, next) => {
             .populate('type')
             .populate({
                 path: 'profile',
+                select: 'lists'
             });
 
-        console.log(user);
+        // Buscar listado
+        var list = await List.findOne({ slug: req.params.slug })
+            .populate({
+                path: 'owner', // Profile
+                populate: {
+                    path: 'owner',
+                    select: 'nickname'
+                }
+            })
+            .populate({
+                path: 'content',
+                populate: {
+                    path: 'resource',
+                }
+            });
 
-        // TODO : REMOVE FROM LIST
+        if (!list) {
+            return res.status(404).send({ error: 'List not found' });
+        }
 
+        // Buscar recurso
+        var resource = await Resource.findOne({ slug: req.body.resource.slug });
+        if (!resource) {
+            return res.status(404).json({ error: 'Resource not found' });
+        }
+
+        var profile = user.profile;
+        // Comprobar si es usuario admin o es del usuario logueado
+        if (!user.type || user.type.name !== 'Admin') {
+            var userLists = profile.lists;
+            // console.log('userLists', userLists);
+
+            var result = userLists.find(currentList => {
+                return currentList.toString() === list._id.toString()
+            });
+
+            if (result === -1) {
+                // Esa lista no es del usuario logueado
+                return res.sendStatus(403);
+            }
+        }
+
+        // Comprobar si estaba en el listado 
+        var elementInList = list.content.find(currentElement => currentElement.resource._id.toString() == resource._id.toString());
+        if (elementInList) {
+            var newList = await List.findOneAndUpdate({
+                _id: list._id
+            }, {
+                "$pull": { "content": elementInList._id }
+            },
+                { new: true }
+            )
+                .populate({
+                    path: 'owner', // Profile
+                    populate: {
+                        path: 'owner',
+                        select: 'nickname'
+                    }
+                })
+                .populate({
+                    path: 'content',
+                    populate: {
+                        path: 'resource',
+                    }
+                });
+
+            await elementInList.remove();
+            return res.send({ list: newList })
+        } else {
+            console.log('Not in list');
+        }
+
+        return res.send({ list });
     } catch (e) {
         next(e);
     }
 });
-
-
 
 export default router;

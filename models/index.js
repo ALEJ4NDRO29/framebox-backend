@@ -5,9 +5,9 @@ mongoose.connect(process.env.DH_HOST || 'mongodb://localhost/framebox', { useNew
 mongoose.set('useCreateIndex', true);
 mongoose.set('useFindAndModify', false);
 
-if (!process.env.PRODUCTION) {
-    mongoose.set('debug', true)
-}
+// if (!process.env.PRODUCTION) {
+//     mongoose.set('debug', true)
+// }
 
 import './Profile';
 import './User_type';
