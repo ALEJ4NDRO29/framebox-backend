@@ -22,6 +22,7 @@ console.log('Load DB Models'.grey);
 // Create default data
 const User_type = mongoose.model('User_type');
 const User = mongoose.model('User');
+const Profile = mongoose.model('Profile');
 
 const Resource_type = mongoose.model('Resource_type');
 
@@ -62,8 +63,12 @@ async function checkUsers() {
         adminUser.setPassword(process.env.ADMIN_PASSWORD || 'admin');
         adminUser.createProfile();
 
+        var profile = new Profile();
+        profile.owner = adminUser;
+        adminUser.profile = profile;
         await adminUser.save();
-    }  
+        await profile.save();
+    }
 }
 
 async function checkResType(typeName) {

@@ -72,6 +72,7 @@ router.delete('/nickname/:nickname', auth.required, async (req, res, next) => {
 });
 
 // ELIMINAR USUARIO ACTUAL
+// TODO: ELIMINAR VISTOS, LISTAS...
 router.delete('/me', auth.required, async (req, res, next) => {
     try {
         var user = await User.findById(req.payload.id).populate('profile');

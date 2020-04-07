@@ -48,6 +48,7 @@ UserSchema.methods.validPassword = function (password) {
 
 UserSchema.methods.createProfile = function () {
     this.profile = new Profile()
+    this.nickname = this.nickname; // FIXME
     return this.profile.save();
 }
 

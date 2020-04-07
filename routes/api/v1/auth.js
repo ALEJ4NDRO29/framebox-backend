@@ -7,6 +7,7 @@ import { IsAdminUser } from '../../../utils/UsersUtils';
 
 const router = express.Router();
 const User = mongoose.model('User');
+const Profile = mongoose.model('Profile');
 const User_type = mongoose.model('User_type');
 
 router.get('/current', auth.required, (req, res, next) => {
@@ -29,8 +30,12 @@ router.post('/register', async (req, res, next) => {
         user.email = req.body.user.email;
 
         user.setPassword(req.body.user.password)
-        await user.createProfile();
-        await user.save()
+        // await user.createProfile();
+        var profile = new Profile();
+        profile.owner = user;
+        user.profile = profile;
+        await user.save();
+        await profile.save();
 
         res.send({ user: user.toAuthJson() });
     } catch (e) {

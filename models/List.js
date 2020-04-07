@@ -22,6 +22,12 @@ const ListSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Profile',
+        required: true
+    },
     
     content: [{ type: mongoose.Schema.Types.ObjectId, ref: 'List_resource' }]
 }, {
@@ -49,8 +55,26 @@ ListSchema.methods.toJSON = function () {
         slug: this.slug,
         name: this.name,
         description: this.description,
+        owner: {
+            nickname: this.owner.owner.nickname
+        },
         private: this.private,
         content: this.content,
+        createdAt: this.createdAt,
+        updatedAt: this.updatedAt
+    }
+}
+
+ListSchema.methods.toPreviewJSON = function () {
+    return {
+        slug: this.slug,
+        name: this.name,
+        description: this.description,
+        private: this.private,
+        content: {
+            size: this.content.length
+        },
+        owner: this.owner,
         createdAt: this.createdAt,
         updatedAt: this.updatedAt
     }

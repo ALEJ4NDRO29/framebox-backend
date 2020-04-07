@@ -1,6 +1,11 @@
 import mongoose from 'mongoose';
 
 var ProfileSchema = new mongoose.Schema({
+    owner: {
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'User',
+        required: true
+    },
     name: {
         type: String
     },
@@ -19,6 +24,8 @@ var ProfileSchema = new mongoose.Schema({
     lists: [{
         type: mongoose.Schema.Types.ObjectId, ref: 'List'
     }]
+}, {
+    timestamps: true
 })
 
 ProfileSchema.methods.isViewed = function (resourceId) {
