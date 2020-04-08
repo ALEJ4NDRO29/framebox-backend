@@ -4,6 +4,7 @@ import passport from 'passport';
 
 import auth from '../../authJwt';
 import { IsAdminUser } from '../../../utils/UsersUtils';
+import { sendWelcome } from '../../../utils/EmailUtils';
 
 const router = express.Router();
 const User = mongoose.model('User');
@@ -36,6 +37,8 @@ router.post('/register', async (req, res, next) => {
         user.profile = profile;
         await user.save();
         await profile.save();
+
+        sendWelcome(req.body.user.email, req.body.user.nickname);
 
         res.send({ user: user.toAuthJson() });
     } catch (e) {

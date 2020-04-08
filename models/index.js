@@ -16,6 +16,8 @@ import './Resource_type';
 import './Resource';
 import './List_resource';
 import './List';
+import './Suggestion_state';
+import './Suggestions';
 
 console.log('Load DB Models'.grey);
 
@@ -25,6 +27,7 @@ const User = mongoose.model('User');
 const Profile = mongoose.model('Profile');
 
 const Resource_type = mongoose.model('Resource_type');
+const Suggestion_state = mongoose.model('Suggestion_state');
 
 checkUsers();
 
@@ -32,6 +35,11 @@ checkResType('Movie');
 checkResType('Serie');
 checkResType('Music');
 checkResType('Videogame');
+
+checkSuggestionState('Received');
+checkSuggestionState('In_course');
+checkSuggestionState('Accepted');
+checkSuggestionState('Denied');
 
 async function checkUsers() {
     console.log("Check Admin Type".grey);
@@ -79,5 +87,16 @@ async function checkResType(typeName) {
         type = new Resource_type();
         type.name = typeName;
         type.save();
+    }
+}
+
+async function checkSuggestionState(stateName) {
+    console.log(`Check ${stateName} suggestion state`.grey);
+    var state = await Suggestion_state.findOne({name: stateName});
+    if (!state) {
+        console.log(`Create ${stateName} state`.grey);
+        state = new Suggestion_state();
+        state.name = stateName;
+        state.save();
     }
 }

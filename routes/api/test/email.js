@@ -10,7 +10,7 @@ router.get('/', async (req, res, next) => {
             subject: "It's Works ✔",
             text: "Hello from Frambox"
         }
-        var resEmail = await sendEmail(params);
+        // var resEmail = await sendEmail(params);
         return res.send({resEmail});
     } catch (e) {
         next(e);

@@ -25,6 +25,30 @@ export function initializeEmail() {
     })
 }
 
+/**
+ * Send email
+ * @param {Object} params - Email params
+ * @param {String} params.from - From email
+ * @param {String} params.to - To email
+ * @param {String} params.subject - Email subject
+ * @param {String} params.text - Email body
+ */
 export function sendEmail(params) {
     return transport.sendMail(params);
+}
+
+/**
+ * Send Welcome email
+ * @param {String} to - To email
+ * @param {String} nickname - User's nickname
+ */
+export function sendWelcome(to, nickname) {
+    var params = {
+        from: '"Framebox" <framebox.web@gmail.com>',
+        to: to,
+        subject: "Welcome to Framebox",
+        text: `Hello ${nickname} and welcome.`
+    }
+
+    return sendEmail(params);
 }

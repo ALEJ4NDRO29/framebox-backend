@@ -151,6 +151,9 @@ router.get('/me', auth.required, async (req, res, next) => {
     }
 });
 
+// TODO : FILTER CONTENT
+// https://stackoverflow.com/questions/16325817/in-mongoose-how-to-filter-an-array-of-objects
+
 // DEVOLVER LISTADO POR SLUG
 router.get('/get/:slug', auth.optional, async (req, res, next) => {
     try {
