@@ -4,8 +4,6 @@ import cookieParser from "cookie-parser";
 import logger from "morgan";
 import 'colors';
 
-require('dotenv').config();
-
 // import { config } from "dotenv";
 // config();
 
@@ -48,7 +46,3 @@ app.use(function (err, req, res, next) {
 });
 
 export default app;
-
-// module.exports = app;
-
-

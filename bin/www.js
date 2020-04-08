@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 
+// LOAD .env
+require('dotenv').config();
+
 /**
  * Module dependencies.
  */
-
 import app from '../app';
 import http from 'http';
+import { initializeEmail } from '../utils/EmailUtils';
 // var debug = require('debug')('backend:server');
 
 /**
@@ -88,3 +91,5 @@ function onListening() {
     : 'port ' + addr.port;
   console.log(`Listening on ${bind}`.grey);
 }
+
+initializeEmail();
