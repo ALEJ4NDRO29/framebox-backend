@@ -80,7 +80,6 @@ UserSchema.methods.toAuthJson = function () {
 
 UserSchema.methods.isAdmin = function () {
     var isAdmin = this.type != null && this.type.name === 'Admin';
-    console.log('isAdmin', isAdmin);
     return isAdmin;
 }
 

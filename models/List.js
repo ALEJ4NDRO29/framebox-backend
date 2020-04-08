@@ -17,7 +17,7 @@ const ListSchema = new mongoose.Schema({
     description: {
         type: String
     },
-    
+
     private: {
         type: Boolean,
         default: false
@@ -28,7 +28,7 @@ const ListSchema = new mongoose.Schema({
         ref: 'Profile',
         required: true
     },
-    
+
     content: [{ type: mongoose.Schema.Types.ObjectId, ref: 'List_resource' }]
 }, {
     timestamps: true,
@@ -51,18 +51,21 @@ ListSchema.methods.isPrivate = function () {
 }
 
 ListSchema.methods.toJSON = function () {
-    return {
+    var res = {
         slug: this.slug,
         name: this.name,
         description: this.description,
-        owner: {
-            nickname: this.owner.owner.nickname // FIXME
-        },
         private: this.private,
         content: this.content,
         createdAt: this.createdAt,
         updatedAt: this.updatedAt
     }
+    if (this.owner && this.owner.owner && this.owner.owner.nickname) {
+        res.owner = {
+            nickname: this.owner.owner.nickname
+        }
+    }
+    return res;
 }
 
 ListSchema.methods.toPreviewJSON = function () {

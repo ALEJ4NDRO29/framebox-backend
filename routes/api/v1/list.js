@@ -2,13 +2,51 @@ import express from 'express';
 import auth from '../../authJwt';
 import mongoose from 'mongoose';
 const router = express.Router();
+import { IsAdminUser } from '../../../utils/UsersUtils';
 
 const User = mongoose.model('User');
 const List = mongoose.model('List');
+const Profile = mongoose.model('Profile');
 const Resource = mongoose.model('Resource');
 const List_resource = mongoose.model('List_resource');
 
-// TODO : ADMIN CREA LISTADO A USUARIO
+// ADMIN CREA LISTA A USUARIO
+router.post('/create/to/:nickname', auth.required, async (req, res, next) => {
+    try {
+        
+        if (!await IsAdminUser(req.payload.id)) {
+            return res.sendStatus(403);
+        }
+        if (!req.body.list || !req.body.list.name) {
+            return res.sendStatus(400);
+        }
+
+        var user = await User.findOne({ nickname: req.params.nickname }, { profile: 1 }).populate({
+            path: 'profile',
+            populate: {
+                path: 'owner',
+                select: 'nickname'
+            }
+        });
+        
+        var profile = user.profile;
+
+        var list = new List();
+        list.owner = profile;
+        list.name = req.body.list.name;
+        list.description = req.body.list.description;
+        list.private = req.body.list.private;
+        await list.save();
+
+        profile.lists.push(list);
+        await profile.save();
+
+        return res.send({ list });
+    } catch (e) {
+        next(e);
+    }
+})
+
 
 // CREATE LIST CURRENT USER
 router.post('/me', auth.required, async (req, res, next) => {
@@ -73,7 +111,15 @@ router.delete('/remove/:slug', auth.required, async (req, res, next) => {
         var toRemoveOriginal = list.content;
         var toRemove = toRemoveOriginal.map(o => o._id)
 
+        // Remove content
         await List_resource.deleteMany({ _id: { $in: toRemove } });
+
+        // Remove from user's profile
+        await Profile.updateOne({_id: list.owner._id}, {
+            "$pull": { "lists": list._id }
+        });
+
+        // Remove list
         await list.remove();
 
         return res.sendStatus(200);
