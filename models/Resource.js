@@ -20,6 +20,12 @@ const ResourceSchema = new mongoose.Schema({
     description: {
         type: String,
     },
+    imageUrl: {
+        type: String,
+    },
+    company: {
+        type: String
+    },
     releasedAt: {
         type: Date
     }
@@ -50,6 +56,8 @@ ResourceSchema.methods.toAdminJSON = function () {
         type: this.type.toJSON(),
         title: this.title,
         description: this.description,
+        imageUrl: this.imageUrl,
+        company:  this.company,
         releasedAt: this.releasedAt,
         createdAt: this.createdAt,
         updatedAt: this.updatedAt
@@ -61,6 +69,8 @@ ResourceSchema.methods.toJSON = function () {
         slug: this.slug,
         type: this.type.toJSON(),
         title: this.title,
+        imageUrl: this.imageUrl,
+        company:  this.company,
         description: this.description,
         releasedAt: this.releasedAt,
     }
