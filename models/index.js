@@ -17,7 +17,7 @@ import './Resource';
 import './List_resource';
 import './List';
 import './Suggestion_state';
-import './Suggestions';
+import './Suggestion';
 
 console.log('Load DB Models'.grey);
 

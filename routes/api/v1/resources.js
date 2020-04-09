@@ -64,9 +64,9 @@ router.post('/', auth.required, async (req, res, next) => {
             return res.status(400).json({ error: 'title not set' });
         }
 
-        var type = await Resource_type.findOne({ name: req.body.resource.type })
+        var type = await Resource_type.findOne({ name: req.body.resource.type });
         if (!type) {
-            return res.status(404).json({ error: 'Type not found' })
+            return res.status(404).json({ error: 'Type not found' });
         }
 
         // Crear recurso
@@ -74,6 +74,8 @@ router.post('/', auth.required, async (req, res, next) => {
         resource.title = req.body.resource.title;
         resource.type = type;
         resource.description = req.body.resource.description;
+        resource.imageUrl = req.body.resource.imageUrl;
+        resource.company = req.body.resource.company;
         resource.releasedAt = req.body.resource.releasedAt;
 
         await resource.save();
@@ -84,16 +86,18 @@ router.post('/', auth.required, async (req, res, next) => {
     }
 });
 
+// Listado
 router.get('/', async (req, res, next) => {
+    // TODO: PAGINATE
     try {
         var resources = await Resource.find().populate('type');
-        return res.send(resources);
+        return res.send({resources});
     } catch (e) {
         next(e);
     }
 });
 
-// request.params.slug
+// Details
 router.get('/slug/:slug', async (req, res, next) => {
     try {
         var resource = await Resource.findOne({ slug: req.params.slug }).populate('type');
@@ -101,12 +105,13 @@ router.get('/slug/:slug', async (req, res, next) => {
         if (!resource)
             return res.sendStatus(404);
 
-        return res.send(resource);
+        return res.send({resource});
     } catch (e) {
         next(e);
     }
 });
 
+// Update
 router.put('/slug/:slug', auth.required, async (req, res, next) => {
     try {
         if (!await IsAdminUser(req.payload.id))
@@ -133,17 +138,19 @@ router.put('/slug/:slug', auth.required, async (req, res, next) => {
         }
 
         resource.description = req.body.resource.description;
-
+        resource.imageUrl = req.body.resource.imageUrl;
+        resource.company = req.body.resource.company;
         resource.releasedAt = req.body.resource.releasedAt;
 
         await resource.save();
 
-        return res.send(resource);
+        return res.send({resource});
     } catch (e) {
         next(e);
     }
 });
 
+// Delete
 router.delete('/slug/:slug', auth.required, async (req, res, next) => {
     try {
         if (!await IsAdminUser(req.payload.id))
@@ -163,6 +170,5 @@ router.delete('/slug/:slug', auth.required, async (req, res, next) => {
 });
 
 // TODO FILTER -> req.query.
-
 
 export default router;

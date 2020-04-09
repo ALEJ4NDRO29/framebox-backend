@@ -3,12 +3,14 @@ import slug from 'slug';
 
 var SuggestionScheme = new mongoose.Schema({
     state: {
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Suggestion_state'
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Suggestion_state',
+        required: true
     },
     profile: {
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Profile'
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Profile',
+        required: true
     },
     slug: {
         type: String,
@@ -27,6 +29,12 @@ var SuggestionScheme = new mongoose.Schema({
     description: {
         type: String,
     },
+    imageUrl: {
+        type: String
+    },
+    company: {
+        type: String
+    },
     releasedAt: {
         type: Date
     }
@@ -43,5 +51,29 @@ SuggestionScheme.pre('validate', function () {
 SuggestionScheme.methods.slugify = function () {
     this.slug = slug(this.title) + '-' + (Math.random() * Math.pow(36, 6) | 0).toString(36);
 };
+
+SuggestionScheme.methods.toJSON = function () {
+    var res = {
+        slug: this.slug,
+        title: this.title,
+        description: this.description,
+        imageUrl: this.imageUrl,
+        company: this.company,
+        releasedAt: this.releasedAt,
+        createdAt: this.createdAt
+    }
+
+    if (this.state && this.state.name) {
+        res.state = this.state.name;
+    }
+
+    if (this.profile && this.profile.owner) {
+        res.profile = {
+            nickname: this.profile.owner.nickname
+        }
+    }
+
+    return res;
+}
 
 mongoose.model('Suggestion', SuggestionScheme);
