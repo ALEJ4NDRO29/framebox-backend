@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 
 var transport;
+var enabled = false;
 
 /**
  * Initialize email transport service
@@ -9,8 +10,8 @@ export function initializeEmail() {
     transport = nodemailer.createTransport({
         // pool: true,
         host: process.env.EMAIL_HOST, // "smtp.gmail.com",
-        port: process.env.EMAIL_PORT, // 587,
-        secure: false, // upgrade later with STARTTLS
+        port: process.env.EMAIL_PORT, // 587 / 465,
+        secure: true, // upgrade later with STARTTLS
         auth: {
             user: process.env.EMAIL_ACCOUNT, // Cargar siempre de .env
             pass: process.env.PASSWORD_ACCOUNT
@@ -19,8 +20,10 @@ export function initializeEmail() {
     transport.verify(function (error, success) {
         if (error) {
             console.log('Email Error', error);
+            enabled = false;
         } else {
             console.log('Email verified', success);
+            enabled = true;
         }
     })
 }
@@ -34,7 +37,12 @@ export function initializeEmail() {
  * @param {String} params.text - Email body
  */
 export function sendEmail(params) {
-    return transport.sendMail(params);
+    if(enabled){
+        console.log('Sending email'.gray);
+        return transport.sendMail(params);
+    } else {
+        console.log('Email service disabled'.red);
+    }
 }
 
 /**
@@ -51,4 +59,20 @@ export function sendWelcome(to, nickname) {
     }
 
     return sendEmail(params);
+}
+
+/**
+ * @param {String} to - User email
+ * @param {String} nickname - User nickname
+ * @param {String} title - Resource title
+ */
+export function sendThanksSuggestion(to, nickname, title) {
+    var params = {
+        from: '"Framebox" <framebox.web@gmail.com>',
+        to: to,
+        subject: `Thanks ${nickname} for your suggestion`,
+        text: `"${title}" will be shown if it is accepted`
+    }
+
+    return sendEmail(params)
 }
