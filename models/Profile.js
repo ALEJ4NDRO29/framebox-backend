@@ -9,6 +9,11 @@ var ProfileSchema = new mongoose.Schema({
     name: {
         type: String
     },
+    karma: {
+        type: Number,
+        required: true,
+        default: 0
+    },
     bio: {
         type: String
     },
@@ -36,6 +41,7 @@ ProfileSchema.methods.isViewed = function (resourceId) {
 ProfileSchema.methods.toJSON = function () {
     return ({
         name: this.name,
+        karma: this.karma,
         bio: this.bio,
         website: this.website,
         status: this.status,

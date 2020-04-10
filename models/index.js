@@ -86,7 +86,7 @@ async function checkResType(typeName) {
         console.log(`Create ${typeName} type`.grey);
         type = new Resource_type();
         type.name = typeName;
-        type.save();
+        return type.save();
     }
 }
 
@@ -97,6 +97,6 @@ async function checkSuggestionState(stateName) {
         console.log(`Create ${stateName} state`.grey);
         state = new Suggestion_state();
         state.name = stateName;
-        state.save();
+        return state.save();
     }
 }
