@@ -71,7 +71,7 @@ UserSchema.methods.toAuthJson = function () {
         jwt: this.generateJWT()
     }
 
-    if (this.type) {
+    if (this.type && this.type.name) {
         user.type = this.type.name;
     }
 

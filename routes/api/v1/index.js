@@ -5,12 +5,14 @@ import auth from './auth';
 import resource from './resources';
 import profile from './profile';
 import list from './list';
+import review from './review';
 import suggestion from './suggestion';
 
 router.use('/auth', auth);
 router.use('/resource', resource);
 router.use('/profile', profile);
 router.use('/list', list);
+router.use('/review', review);
 router.use('/suggestion', suggestion);
 
 export default router;

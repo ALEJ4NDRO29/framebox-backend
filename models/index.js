@@ -18,6 +18,7 @@ import './List_resource';
 import './List';
 import './Suggestion_state';
 import './Suggestion';
+import './Review';
 
 console.log('Load DB Models'.grey);
 
