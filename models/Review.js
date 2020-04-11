@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 const ReviewSchema = new mongoose.Schema({
     profile: {
@@ -23,6 +24,8 @@ const ReviewSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+ReviewSchema.plugin(mongoosePaginate);
 
 ReviewSchema.methods.toJSON = function () {
     var res = {

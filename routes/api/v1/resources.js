@@ -91,7 +91,7 @@ router.get('/', async (req, res, next) => {
     // TODO: PAGINATE
     try {
         var resources = await Resource.find().populate('type');
-        return res.send({resources});
+        return res.send({ resources });
     } catch (e) {
         next(e);
     }
@@ -105,7 +105,7 @@ router.get('/slug/:slug', async (req, res, next) => {
         if (!resource)
             return res.sendStatus(404);
 
-        return res.send({resource});
+        return res.send({ resource });
     } catch (e) {
         next(e);
     }
@@ -144,7 +144,7 @@ router.put('/slug/:slug', auth.required, async (req, res, next) => {
 
         await resource.save();
 
-        return res.send({resource});
+        return res.send({ resource });
     } catch (e) {
         next(e);
     }
@@ -170,5 +170,21 @@ router.delete('/slug/:slug', auth.required, async (req, res, next) => {
 });
 
 // TODO FILTER -> req.query.
+router.get('/paginate', async (req, res, next) => {
+    try {
+        var resources = await Resource.paginate({}, {
+            limit: req.query.limit || 10,
+            page: req.query.page || 1,
+            sort: req.query.orderBy || '-createdAt',
+            populate: {
+                path: 'type',
+                select: 'name'
+            }
+        });
+        return res.send(resources);
+    } catch (e) {
+        next(e);
+    }
+});
 
 export default router;

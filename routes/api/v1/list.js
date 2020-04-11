@@ -13,7 +13,7 @@ const List_resource = mongoose.model('List_resource');
 // ADMIN CREA LISTA A USUARIO
 router.post('/create/to/:nickname', auth.required, async (req, res, next) => {
     try {
-        
+
         if (!await IsAdminUser(req.payload.id)) {
             return res.sendStatus(403);
         }
@@ -28,7 +28,7 @@ router.post('/create/to/:nickname', auth.required, async (req, res, next) => {
                 select: 'nickname'
             }
         });
-        
+
         var profile = user.profile;
 
         var list = new List();
@@ -77,6 +77,7 @@ router.post('/me', auth.required, async (req, res, next) => {
     }
 });
 
+// ELIMINAR LISTA
 router.delete('/remove/:slug', auth.required, async (req, res, next) => {
     try {
         var user = await User.findById(req.payload.id, { profile: 1, owner: 1, type: 1 })
@@ -91,7 +92,8 @@ router.delete('/remove/:slug', auth.required, async (req, res, next) => {
                 path: 'owner'
             })
             .populate({
-                path: 'content'
+                path: 'content',
+                select: '_id'
             });
 
         if (!list) {
@@ -115,7 +117,7 @@ router.delete('/remove/:slug', auth.required, async (req, res, next) => {
         await List_resource.deleteMany({ _id: { $in: toRemove } });
 
         // Remove from user's profile
-        await Profile.updateOne({_id: list.owner._id}, {
+        await Profile.updateOne({ _id: list.owner._id }, {
             "$pull": { "lists": list._id }
         });
 
@@ -135,7 +137,7 @@ router.get('/me', auth.required, async (req, res, next) => {
             path: 'profile',
             populate: {
                 path: 'lists',
-                select: '-_id -content -createdAt -updatedAt',
+                select: '-content',
                 populate: {
                     path: 'owner'
                 }
@@ -246,6 +248,7 @@ router.post('/content/:slug', auth.required, async (req, res, next) => {
             })
             .populate({
                 path: 'content',
+                select: '-list',
                 populate: {
                     path: 'resource',
                 }
@@ -256,7 +259,11 @@ router.post('/content/:slug', auth.required, async (req, res, next) => {
         }
 
         // Buscar recurso
-        var resource = await Resource.findOne({ slug: req.body.resource.slug });
+        var resource = await Resource.findOne({ slug: req.body.resource.slug })
+            .populate({
+                path: 'type',
+                select: 'name'
+            });
         if (!resource) {
             return res.status(404).json({ error: 'Resource not found' });
         }
@@ -280,21 +287,23 @@ router.post('/content/:slug', auth.required, async (req, res, next) => {
         var actualContent = list.content;
 
         // Comprobar si ya estaba en la lista
-        var exists = actualContent.find(listResource => listResource.resource._id.toString() == resource._id.toString());
-        if (!exists) {
+        var listResource = actualContent.find(listResource => listResource.resource._id.toString() == resource._id.toString());
+        if (!listResource) {
             // Añadir si no estaba
             var listResource = new List_resource();
+            listResource.list = list._id;
             listResource.resource = resource;
             listResource.save();
 
             actualContent.push(listResource);
 
-            list.save();
+            await list.save();
         } else {
             console.log('Was already on the list');
         }
 
-        return res.send({ list });
+        // FIXME
+        return res.send(listResource);
     } catch (e) {
         next(e);
     }
@@ -381,12 +390,79 @@ router.delete('/content/:slug', auth.required, async (req, res, next) => {
                 });
 
             await elementInList.remove();
-            return res.send({ list: newList })
+            // return res.send({ list: newList })
+            return res.sendStatus(200);
         } else {
             console.log('Not in list');
         }
 
         return res.send({ list });
+    } catch (e) {
+        next(e);
+    }
+});
+
+// CONTENIDO PAGINADO DE UNA LISTA
+router.get('/content/:slug', auth.optional, async (req, res, next) => {
+    try {
+        // TODO LISTAR SI 
+        //      - ES PÚBLICA
+        //      - USUARIO ADMIN
+        //      - USUARIO PROPIETARIO
+        var list = await List.findOne({ slug: req.params.slug }, { private: 1, profile: 1 })
+            .populate({
+                path: 'owner',
+                select: '_id'
+            });
+        if (!list) {
+            return res.sendStatus(404);
+        }
+
+        // var profile = list.profile;
+
+        // Comprobar si la lista es privada
+        if (list.private) {
+            // Comprobar usuario logueado
+            if (!req.payload) {
+                return res.sendStatus(403);
+            }
+
+            // Comproar si es propietario
+            var user = await User.findById(req.payload.id, { type: 1, profile: 1 })
+                .populate({
+                    path: 'profile',
+                    select: '_id'
+                })
+                .populate({
+                    path: 'type',
+                    select: 'name'
+                });
+
+            var currentUserProfileId = user.profile._id.toString();
+            var listProfileId = list.owner._id.toString();
+
+            if (currentUserProfileId !== listProfileId) {
+                if (!user.type || (!user.type.name !== 'Admin')) {
+                    return res.sendStatus(403);
+                }
+            }
+        }
+
+        var content = await List_resource.paginate({ list }, {
+            limit: req.query.limit || 10,
+            page: req.query.page || 1,
+            select: '-list',
+            sort: req.query.orderBy || '-createdAt',
+            populate: {
+                path: 'resource',
+                select: '-description',
+                populate: {
+                    path: 'type',
+                    select: 'name'
+                }
+            }
+        });
+        return res.send(content);
     } catch (e) {
         next(e);
     }

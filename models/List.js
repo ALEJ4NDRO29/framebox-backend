@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import mongooseUniqueValidator from 'mongoose-unique-validator';
+import mongoosePaginate from 'mongoose-paginate-v2';
 import slug from 'slug';
 
 const ListSchema = new mongoose.Schema({
@@ -35,6 +36,7 @@ const ListSchema = new mongoose.Schema({
 });
 
 ListSchema.plugin(mongooseUniqueValidator, { message: 'is already taken.' });
+ListSchema.plugin(mongoosePaginate);
 
 ListSchema.pre("validate", function () {
     if (!this.slug) {

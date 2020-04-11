@@ -90,28 +90,44 @@ router.delete('/me', auth.required, async (req, res, next) => {
 // ADMIN LISTADO VISTO
 router.get('/nickname/:nickname/viewed', auth.required, async (req, res, next) => {
     try {
+        // TODO PAGINATE
         if (!await IsAdminUser(req.payload.id))
             return res.status(401).json({ error: 'Unauthorized' });
 
-        var user = await User.findOne({ nickname: req.params.nickname })
+        var user = await User.findOne({ nickname: req.params.nickname }, { populate: 1 })
             .populate({
                 path: 'profile',
-                populate: {
-                    path: 'viewed_content',
-                    populate: {
-                        path: 'resource',
-                        populate: 'type',
-                        select: ['title', 'slug', 'type', 'releasedAt'],
-                    }
-                }
+                select: '_id'
+                // populate: {
+                //     path: 'viewed_content',
+                //     populate: {
+                //         path: 'resource',
+                //         populate: 'type',
+                //         select: ['title', 'slug', 'type', 'releasedAt'],
+                //     }
+                // }
             });
 
         if (!user) {
             return res.sendStatus(404);
         }
 
-        var viewed_content = user.profile.viewed_content;
-        res.send({ viewed_content })
+        var profile = user.profile;
+
+        var viewed_content = await List_resource.paginate({ profile }, {
+            limit: req.query.limit || 10,
+            page: req.query.page || 1,
+            sort: '-createdAt',
+            populate: {
+                path: 'resource',
+                select: ['title', 'slug', 'type', 'releasedAt'],
+                populate: {
+                    path: 'type',
+                    select: 'name'
+                }
+            }
+        });
+        res.send(viewed_content)
     } catch (e) {
         next(e);
     }
@@ -120,23 +136,27 @@ router.get('/nickname/:nickname/viewed', auth.required, async (req, res, next) =
 // LISTADO VISTO USUARIO ACTUAL
 router.get('/me/viewed', auth.required, async (req, res, next) => {
     try {
-        // TODO PAGINATE
-        var user = await User.findById(req.payload.id)
+        var user = await User.findById(req.payload.id, { profile: 1 })
             .populate({
                 path: 'profile',
-                populate: {
-                    path: 'viewed_content',
-                    populate: {
-                        path: 'resource',
-                        populate: 'type',
-                        select: ['title', 'slug', 'type', 'releasedAt'],
-                    }
-                }
             });
         var profile = user.profile;
-        var viewed_content = profile.viewed_content;
 
-        return res.send({ viewed_content });
+        var viewed_content = await List_resource.paginate({ profile }, {
+            limit: req.query.limit || 10,
+            page: req.query.page || 1,
+            sort: '-createdAt',
+            populate: {
+                path: 'resource',
+                select: ['title', 'slug', 'type', 'releasedAt'],
+                populate: {
+                    path: 'type',
+                    select: 'name'
+                }
+            }
+        });
+
+        return res.send(viewed_content);
     } catch (e) {
         next(e);
     }
@@ -154,6 +174,9 @@ router.post('/me/viewed', auth.required, async (req, res, next) => {
                 path: 'profile',
                 populate: {
                     path: 'viewed_content',
+                    options: {
+                        limit: 1,
+                    },
                     populate: {
                         path: 'resource',
                         populate: 'type',
@@ -162,7 +185,11 @@ router.post('/me/viewed', auth.required, async (req, res, next) => {
                 }
             });
 
-        var resource = await Resource.findOne({ slug: req.body.resource.slug });
+        var resource = await Resource.findOne({ slug: req.body.resource.slug })
+            .populate({
+                path: 'type',
+                select: 'name'
+            });
         if (!resource) {
             return res.sendStatus(404);
         }
@@ -177,6 +204,7 @@ router.post('/me/viewed', auth.required, async (req, res, next) => {
             // console.log('find', find);
 
             var list_resource = new List_resource();
+            list_resource.profile = profile;
             list_resource.resource = resource;
             await list_resource.save();
 
@@ -187,7 +215,7 @@ router.post('/me/viewed', auth.required, async (req, res, next) => {
             console.log('Was already seen');
         }
 
-        return res.send({ viewed_content });
+        return res.send(list_resource);
     } catch (e) {
         next(e);
     }
@@ -238,7 +266,7 @@ router.post('/nickname/:nickname/viewed', auth.required, async (req, res, next) 
             console.log('Was already seen');
         }
 
-        return res.send({ viewed_content });
+        return res.send(list_resource);
     } catch (e) {
         next(e);
     }
@@ -359,6 +387,6 @@ router.get('/get/:nickname', async (req, res, next) => {
     } catch (e) {
         next(e);
     }
-})
+});
 
 export default router;

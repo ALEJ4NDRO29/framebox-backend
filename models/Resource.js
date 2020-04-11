@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import mongooseUniqueValidator from 'mongoose-unique-validator';
+import mongoosePaginate from 'mongoose-paginate-v2';
 import slug from 'slug';
 
 const ResourceSchema = new mongoose.Schema({
@@ -35,6 +36,7 @@ const ResourceSchema = new mongoose.Schema({
 });
 
 ResourceSchema.plugin(mongooseUniqueValidator, { message: 'is already taken.' });
+ResourceSchema.plugin(mongoosePaginate);
 
 ResourceSchema.pre("validate", function () {
     if (!this.slug) {

@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
 import slug from 'slug';
 
-var SuggestionScheme = new mongoose.Schema({
+var SuggestionSchema = new mongoose.Schema({
     state: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Suggestion_state',
@@ -42,17 +43,19 @@ var SuggestionScheme = new mongoose.Schema({
     timestamps: true
 });
 
-SuggestionScheme.pre('validate', function () {
+SuggestionSchema.pre('validate', function () {
     if (!this.slug) {
         this.slugify();
     }
-})
+});
 
-SuggestionScheme.methods.slugify = function () {
+SuggestionSchema.plugin(mongoosePaginate);
+
+SuggestionSchema.methods.slugify = function () {
     this.slug = slug(this.title) + '-' + (Math.random() * Math.pow(36, 6) | 0).toString(36);
 };
 
-SuggestionScheme.methods.toJSON = function () {
+SuggestionSchema.methods.toJSON = function () {
     var res = {
         slug: this.slug,
         title: this.title,
@@ -76,4 +79,4 @@ SuggestionScheme.methods.toJSON = function () {
     return res;
 }
 
-mongoose.model('Suggestion', SuggestionScheme);
+mongoose.model('Suggestion', SuggestionSchema);
