@@ -271,42 +271,19 @@ router.get('/me', auth.required, async (req, res, next) => {
 
         var profile = user.profile;
 
-        // FIXME POPULATE RESOURCE NO DEVUELVE TODOS LOS DATOS (SLUG NO ESTÁ)
         var reviews = await Review.paginate({profile}, {
             limit: req.query.limit || 10,
             page: req.query.page || 1,
             sort: req.query.orderBy || '-createdAt',
             populate: {
-                // path: 'profile resource',
-                // select: '-description',
-                // populate: {
-                //     path: 'owner type',
-                //     select: 'nickname name'
-                // }
-                path: 'resource',
+                path: 'profile resource',
+                select: '-description',
                 populate: {
-                    path: 'type',
+                    path: 'owner type',
+                    select: 'nickname name'
                 }
             }
         })
-        // var reviews = await Review.find({ profile: profile })
-        //     .populate({
-        //         path: 'profile',
-        //         select: 'owner',
-        //         populate: {
-        //             path: 'owner',
-        //             select: 'nickname'
-        //         }
-        //     })
-        //     .populate({
-        //         path: 'resource',
-        //         select: '-description',
-        //         populate: {
-        //             path: 'type',
-        //             select: 'name'
-        //         }
-        //     });
-
         return res.send({ reviews });
     } catch (e) {
         next(e);

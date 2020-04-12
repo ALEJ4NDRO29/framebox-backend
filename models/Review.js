@@ -45,6 +45,7 @@ ReviewSchema.methods.toJSON = function () {
             res.resource.type = { name: this.resource.type.name }
         }
 
+        res.resource.slug = this.resource.slug;
         res.resource.title = this.resource.title;
         res.resource.imageUrl = this.resource.imageUrl;
         res.resource.company = this.resource.company;
