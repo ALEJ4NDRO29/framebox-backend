@@ -1,0 +1,37 @@
+version: '3'
+
+services: 
+  framebox: 
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: framebox
+    restart: always
+    tty: true
+    working_dir: /app
+    volumes:
+      - ./:/app
+    ports: 
+      - 3000:3000
+    networks: 
+      - framebox-network
+    depends_on:
+      - mongodb
+        
+  mongodb: 
+    image: mongo:4.2.5
+    container_name: frameboxmongodb
+    restart: always
+    tty: true
+    volumes:
+      - mongodbdata:/data/db
+    networks: 
+      - framebox-network
+    
+networks: 
+  framebox-network:
+    driver: bridge
+
+volumes:
+  mongodbdata:
+    driver: local
