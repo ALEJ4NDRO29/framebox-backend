@@ -5,9 +5,9 @@
   "scripts": {
     "start": "babel-node bin/www.js",
     "debug": "nodemon --inspect --exec babel-node bin/www.js",
+    "dev": "nodemon --exec babel-node bin/www.js",
     "startold": "npm run build && node dist/bin/www --inspect-brk=1234",
-    "build": "rimraf dist/* && babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log --copy-files",
-    "dev": "babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log --watch"
+    "build": "rimraf dist/* && babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log --copy-files"
   },
   "nodemonConfig": {
     "ignore": [
