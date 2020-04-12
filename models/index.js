@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 // 'mongodb://localhost/framebox' process.env.DH_HOST
-mongoose.connect('mongodb://frameboxmongodb/framebox', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect('mongodb://localhost/framebox', { useNewUrlParser: true, useUnifiedTopology: true });
 mongoose.set('useCreateIndex', true);
 mongoose.set('useFindAndModify', false);
 
