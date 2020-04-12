@@ -12,6 +12,7 @@ var ProfileSchema = new mongoose.Schema({
     karma: {
         type: Number,
         required: true,
+        min: 0,
         default: 0
     },
     bio: {

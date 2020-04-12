@@ -3,12 +3,13 @@ import mongoose from 'mongoose';
 import auth from '../../authJwt';
 import { IsAdminUser } from '../../../utils/UsersUtils';
 import { sendThanksSuggestion } from '../../../utils/EmailUtils';
+import { Suggestion_state, Suggestion, User, Resource_type } from '../../../models';
 const router = express.Router();
 
-const Suggestion_state = mongoose.model('Suggestion_state');
-const User = mongoose.model('User');
-const Suggestion = mongoose.model('Suggestion');
-const Resource_type = mongoose.model('Resource_type');
+// const Suggestion_state = mongoose.model('Suggestion_state');
+// const User = mongoose.model('User');
+// const Suggestion = mongoose.model('Suggestion');
+// const Resource_type = mongoose.model('Resource_type');
 
 // POSIBLE STATES
 router.get('/states', async (req, res, next) => {
@@ -38,6 +39,9 @@ router.post('/add', auth.required, async (req, res, next) => {
                 populate: {
                     path: 'owner',
                     select: 'nickname'
+                },
+                option: {
+                    limit: 4
                 }
             });
         var profile = user.profile;
@@ -81,7 +85,7 @@ router.get('/', auth.required, async (req, res, next) => {
             select: 'name'
         });
 
-        var filter;
+        var filter = {};
         if (user.type && user.type.name === 'Admin') {
             // Acceso a todas las sugerencias
             console.log('Admin');
@@ -91,21 +95,20 @@ router.get('/', auth.required, async (req, res, next) => {
             filter = { profile: user.profile }
         }
 
-        var suggestions = await Suggestion.find(filter)
-            .populate({
-                path: 'state',
-                select: 'name'
-            })
-            .populate({
-                path: 'profile',
-                select: 'owner',
+        var suggestions = await Suggestion.paginate(filter, {
+            limit: req.query.limit || 10,
+            page: req.query.page || 1,
+            sort: req.query.orderBy || '-createdAt',
+            populate: {
+                path: 'state profile',
                 populate: {
                     path: 'owner',
                     select: 'nickname'
                 }
-            });
-
-        return res.send({ suggestions });
+            }
+        })
+        
+        return res.send(suggestions);
     } catch (e) {
         next(e);
     }

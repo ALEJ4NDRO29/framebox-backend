@@ -3,12 +3,13 @@ import auth from '../../authJwt';
 import mongoose from 'mongoose';
 const router = express.Router();
 import { IsAdminUser } from '../../../utils/UsersUtils';
+import { User, List, Profile, Resource, List_resource } from '../../../models';
 
-const User = mongoose.model('User');
-const List = mongoose.model('List');
-const Profile = mongoose.model('Profile');
-const Resource = mongoose.model('Resource');
-const List_resource = mongoose.model('List_resource');
+// const User = mongoose.model('User');
+// const List = mongoose.model('List');
+// const Profile = mongoose.model('Profile');
+// const Resource = mongoose.model('Resource');
+// const List_resource = mongoose.model('List_resource');
 
 // ADMIN CREA LISTA A USUARIO
 router.post('/create/to/:nickname', auth.required, async (req, res, next) => {

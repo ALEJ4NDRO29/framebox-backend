@@ -1,11 +1,13 @@
 import express from "express";
 import auth from "../../authJwt";
-import mongoose from "mongoose";
+// import mongoose from "mongoose";
 import { IsAdminUser } from "../../../utils/UsersUtils";
 const router = express.Router();
 
-const Resource = mongoose.model('Resource');
-const Resource_type = mongoose.model('Resource_type');
+import { Resource, Resource_type } from "../../../models";
+
+// const Resource = mongoose.model('Resource');
+// const Resource_type = mongoose.model('Resource_type');
 
 // CREAR TIPO DE RECURSO (PELÍCULA, SERIE...)
 router.post('/types', auth.required, async (req, res, next) => {

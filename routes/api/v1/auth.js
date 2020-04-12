@@ -6,10 +6,12 @@ import auth from '../../authJwt';
 import { IsAdminUser } from '../../../utils/UsersUtils';
 import { sendWelcome } from '../../../utils/EmailUtils';
 
+import { User, Profile, User_type } from '../../../models';
+
 const router = express.Router();
-const User = mongoose.model('User');
-const Profile = mongoose.model('Profile');
-const User_type = mongoose.model('User_type');
+// const User = mongoose.model('User');
+// const Profile = mongoose.model('Profile');
+// const User_type = mongoose.model('User_type');
 
 router.get('/current', auth.required, (req, res, next) => {
     User.findById(req.payload.id)

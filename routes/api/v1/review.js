@@ -1,11 +1,12 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import auth from "../../authJwt";
+import { User, Resource, Review } from '../../../models';
 const router = express.Router();
 
-const User = mongoose.model('User');
-const Resource = mongoose.model('Resource');
-const Review = mongoose.model('Review');
+// const User = mongoose.model('User');
+// const Resource = mongoose.model('Resource');
+// const Review = mongoose.model('Review');
 
 // TODO : STATS
 
@@ -214,23 +215,20 @@ router.get('/resource/:slug', async (req, res, next) => {
             return res.sendStatus(404);
         }
 
-        var reviews = await Review.find({ resource: resource })
-            .populate({
-                path: 'profile',
-                select: 'owner',
+        var reviews = await Review.paginate({ resource }, {
+            limit: req.query.limit || 10,
+            page: req.query.page || 1,
+            sort: req.query.orderBy || '-createdAt',
+            populate: {
+                path: 'profile resource',
+                select: '-description',
+
                 populate: {
                     path: 'owner',
                     select: 'nickname'
                 }
-            })
-            .populate({
-                path: 'resource',
-                select: '-description',
-                populate: {
-                    path: 'type',
-                    select: 'name'
-                }
-            });
+            }
+        });
 
         return res.send({ reviews });
     } catch (e) {
@@ -258,7 +256,7 @@ router.get('/id/:id', async (req, res, next) => {
                     select: 'name'
                 }
             });
-        return res.send({ review });
+        return res.send(review);
     } catch (e) {
         next(e);
     }
@@ -273,23 +271,41 @@ router.get('/me', auth.required, async (req, res, next) => {
 
         var profile = user.profile;
 
-        var reviews = await Review.find({ profile: profile })
-            .populate({
-                path: 'profile',
-                select: 'owner',
-                populate: {
-                    path: 'owner',
-                    select: 'nickname'
-                }
-            })
-            .populate({
+        // FIXME POPULATE RESOURCE NO DEVUELVE TODOS LOS DATOS (SLUG NO ESTÁ)
+        var reviews = await Review.paginate({profile}, {
+            limit: req.query.limit || 10,
+            page: req.query.page || 1,
+            sort: req.query.orderBy || '-createdAt',
+            populate: {
+                // path: 'profile resource',
+                // select: '-description',
+                // populate: {
+                //     path: 'owner type',
+                //     select: 'nickname name'
+                // }
                 path: 'resource',
-                select: '-description',
                 populate: {
                     path: 'type',
-                    select: 'name'
                 }
-            });
+            }
+        })
+        // var reviews = await Review.find({ profile: profile })
+        //     .populate({
+        //         path: 'profile',
+        //         select: 'owner',
+        //         populate: {
+        //             path: 'owner',
+        //             select: 'nickname'
+        //         }
+        //     })
+        //     .populate({
+        //         path: 'resource',
+        //         select: '-description',
+        //         populate: {
+        //             path: 'type',
+        //             select: 'name'
+        //         }
+        //     });
 
         return res.send({ reviews });
     } catch (e) {

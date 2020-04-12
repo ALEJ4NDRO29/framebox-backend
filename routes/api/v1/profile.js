@@ -1,13 +1,14 @@
 import express from 'express';
 import auth from '../../authJwt';
-import { IsAdminUser } from '../../../utils/UsersUtils';
+import { IsAdminUser, removeUserById, removeUserByNickname } from '../../../utils/UsersUtils';
 import mongoose from 'mongoose';
+import { User, Resource, List_resource, Profile } from '../../../models';
 const router = express.Router();
 
-const User = mongoose.model('User');
-const Resource = mongoose.model('Resource');
-const List_resource = mongoose.model('List_resource');
-const Profile = mongoose.model('Profile');
+// const User = mongoose.model('User');
+// const Resource = mongoose.model('Resource');
+// const List_resource = mongoose.model('List_resource');
+// const Profile = mongoose.model('Profile');
 
 // ADMIN ACTUALIZA USUARIO
 router.put('/nickname/:nickname', auth.required, async (req, res, next) => {
@@ -58,14 +59,17 @@ router.delete('/nickname/:nickname', auth.required, async (req, res, next) => {
         if (!await IsAdminUser(req.payload.id))
             return res.status(401).json({ error: 'Unauthorized' });
 
-        var user = await User.find({ nickname: req.params.nickname }).populate('profile');
+        var user = await User.find({ nickname: req.params.nickname }, {_id: 1});
         if (!user) {
             return res.sendStatus(404);
         }
-        var profile = user.profile;
 
-        await profile.remove();
-        await user.remove();
+        await removeUserByNickname(req.params.nickname);
+        return res.sendStatus(200);
+        // var profile = user.profile;
+
+        // await profile.remove();
+        // await user.remove();
     } catch (e) {
         next(e);
     }
@@ -75,12 +79,12 @@ router.delete('/nickname/:nickname', auth.required, async (req, res, next) => {
 // TODO: ELIMINAR VISTOS, LISTAS...
 router.delete('/me', auth.required, async (req, res, next) => {
     try {
-        var user = await User.findById(req.payload.id).populate('profile');
-        var profile = user.profile;
+        // var user = await User.findById(req.payload.id).populate('profile');
+        // var profile = user.profile;
 
-        await profile.remove();
-        await user.remove();
-
+        // await profile.remove();
+        // await user.remove();
+        await removeUserById(req.payload.id);
         res.sendStatus(200);
     } catch (e) {
         next(e);

@@ -20,6 +20,7 @@ var UserSchema = new mongoose.Schema({
         type: String,
         lowercase: true,
         required: [true, "can't be blank"],
+        unique: true,
         match: [/^[a-z]+[a-z0-9._]+@[a-z]+\.[a-z.]{2,5}$/, 'is invalid']
     },
     hash: String,

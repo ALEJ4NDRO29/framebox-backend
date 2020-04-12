@@ -22,14 +22,19 @@ import './Review';
 
 console.log('Load DB Models'.grey);
 
+export const User_type = mongoose.model('User_type');
+export const User = mongoose.model('User');
+export const Profile = mongoose.model('Profile');
+
+export const Resource_type = mongoose.model('Resource_type');
+export const Resource = mongoose.model('Resource'); //
+export const List_resource = mongoose.model('List_resource'); //
+export const List = mongoose.model('List'); //
+export const Suggestion_state = mongoose.model('Suggestion_state');
+export const Suggestion = mongoose.model('Suggestion'); //
+export const Review = mongoose.model('Review'); //
+
 // Create default data
-const User_type = mongoose.model('User_type');
-const User = mongoose.model('User');
-const Profile = mongoose.model('Profile');
-
-const Resource_type = mongoose.model('Resource_type');
-const Suggestion_state = mongoose.model('Suggestion_state');
-
 checkUsers();
 
 checkResType('Movie');
