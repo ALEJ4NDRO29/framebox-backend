@@ -1,14 +1,9 @@
 import express from 'express';
 import auth from '../../authJwt';
 import { IsAdminUser, removeUserById, removeUserByNickname } from '../../../utils/UsersUtils';
-import mongoose from 'mongoose';
 import { User, Resource, List_resource, Profile } from '../../../models';
 const router = express.Router();
 
-// const User = mongoose.model('User');
-// const Resource = mongoose.model('Resource');
-// const List_resource = mongoose.model('List_resource');
-// const Profile = mongoose.model('Profile');
 
 // ADMIN ACTUALIZA USUARIO
 router.put('/nickname/:nickname', auth.required, async (req, res, next) => {

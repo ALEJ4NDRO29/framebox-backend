@@ -1,15 +1,9 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import auth from '../../authJwt';
 import { IsAdminUser } from '../../../utils/UsersUtils';
 import { sendThanksSuggestion } from '../../../utils/EmailUtils';
 import { Suggestion_state, Suggestion, User, Resource_type } from '../../../models';
 const router = express.Router();
-
-// const Suggestion_state = mongoose.model('Suggestion_state');
-// const User = mongoose.model('User');
-// const Suggestion = mongoose.model('Suggestion');
-// const Resource_type = mongoose.model('Resource_type');
 
 // POSIBLE STATES
 router.get('/states', async (req, res, next) => {

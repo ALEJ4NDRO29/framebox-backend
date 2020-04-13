@@ -1,6 +1,5 @@
 import express from "express";
 import auth from "../../authJwt";
-// import mongoose from "mongoose";
 import { IsAdminUser } from "../../../utils/UsersUtils";
 const router = express.Router();
 
@@ -89,15 +88,24 @@ router.post('/', auth.required, async (req, res, next) => {
 });
 
 // Listado
+// TODO FILTER
 router.get('/', async (req, res, next) => {
-    // TODO: PAGINATE
     try {
-        var resources = await Resource.find().populate('type');
-        return res.send({ resources });
+        var resources = await Resource.paginate({}, {
+            limit: req.query.limit || 10,
+            page: req.query.page || 1,
+            sort: req.query.orderBy || '-createdAt',
+            populate: {
+                path: 'type',
+                select: 'name'
+            }
+        });
+        return res.send(resources);
     } catch (e) {
         next(e);
     }
 });
+
 
 // Details
 router.get('/slug/:slug', async (req, res, next) => {
@@ -166,24 +174,6 @@ router.delete('/slug/:slug', auth.required, async (req, res, next) => {
         await resource.remove();
 
         return res.sendStatus(200);
-    } catch (e) {
-        next(e);
-    }
-});
-
-// TODO FILTER -> req.query.
-router.get('/paginate', async (req, res, next) => {
-    try {
-        var resources = await Resource.paginate({}, {
-            limit: req.query.limit || 10,
-            page: req.query.page || 1,
-            sort: req.query.orderBy || '-createdAt',
-            populate: {
-                path: 'type',
-                select: 'name'
-            }
-        });
-        return res.send(resources);
     } catch (e) {
         next(e);
     }

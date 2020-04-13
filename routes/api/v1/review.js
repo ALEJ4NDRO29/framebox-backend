@@ -241,8 +241,6 @@ router.get('/resource/:slug/rate', async (req, res, next) => {
         }
 
         var rate = await resource.getRate();
-        console.log(rate);
-        
         return res.send({rate: rate})
     } catch (e) {
         next(e);
