@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import mongoosePaginate from 'mongoose-paginate-v2';
 import uniqueValidator from "mongoose-unique-validator";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
@@ -36,6 +37,7 @@ var UserSchema = new mongoose.Schema({
 });
 
 UserSchema.plugin(uniqueValidator, { message: 'is already taken.' });
+UserSchema.plugin(mongoosePaginate);
 
 UserSchema.methods.setPassword = function (password) {
     this.salt = crypto.randomBytes(16).toString('hex');
@@ -70,6 +72,19 @@ UserSchema.methods.toAuthJson = function () {
         nickname: this.nickname,
         email: this.email,
         jwt: this.generateJWT()
+    }
+
+    if (this.type && this.type.name) {
+        user.type = this.type.name;
+    }
+
+    return user;
+}
+
+UserSchema.methods.toJSON = function () {
+    var user = {
+        nickname: this.nickname,
+        email: this.email
     }
 
     if (this.type && this.type.name) {

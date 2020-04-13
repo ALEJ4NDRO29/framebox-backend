@@ -4,10 +4,6 @@ import auth from "../../authJwt";
 import { User, Resource, Review } from '../../../models';
 const router = express.Router();
 
-// const User = mongoose.model('User');
-// const Resource = mongoose.model('Resource');
-// const Review = mongoose.model('Review');
-
 // TODO : STATS
 
 // CREATE
@@ -234,7 +230,24 @@ router.get('/resource/:slug', async (req, res, next) => {
     } catch (e) {
         next(e);
     }
-})
+});
+
+
+router.get('/resource/:slug/rate', async (req, res, next) => {
+    try {
+        var resource = await Resource.findOne({slug: req.params.slug}, {_id: 1});
+        if(!resource) {
+            return res.sendStatus(404);
+        }
+
+        var rate = await resource.getRate();
+        console.log(rate);
+        
+        return res.send({rate: rate})
+    } catch (e) {
+        next(e);
+    }
+});
 
 // GET BY ID
 router.get('/id/:id', async (req, res, next) => {

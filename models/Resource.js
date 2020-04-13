@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import mongooseUniqueValidator from 'mongoose-unique-validator';
 import mongoosePaginate from 'mongoose-paginate-v2';
 import slug from 'slug';
+import { Review } from '.';
 
 const ResourceSchema = new mongoose.Schema({
     slug: {
@@ -52,6 +53,41 @@ ResourceSchema.methods.setType = function (type) {
     this.type = type;
 };
 
+ResourceSchema.methods.getRate = async function () {
+    var rate = await Review.aggregate([
+        {
+            $match:
+            {
+                resource: this._id
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                value: {
+                    $avg: '$rate'
+                },
+                count: {
+                    $sum: 1
+                }
+            }
+        }
+    ]);
+
+    var res = {
+        value: 0,
+        count: 0
+    }
+
+    if (rate.length > 0) {
+        res.value = rate[0].value;
+        res.count = rate[0].count;
+
+    }
+
+    return res;
+}
+
 ResourceSchema.methods.toAdminJSON = function () {
     return {
         slug: this.slug,
@@ -59,7 +95,7 @@ ResourceSchema.methods.toAdminJSON = function () {
         title: this.title,
         description: this.description,
         imageUrl: this.imageUrl,
-        company:  this.company,
+        company: this.company,
         releasedAt: this.releasedAt,
         createdAt: this.createdAt,
         updatedAt: this.updatedAt
@@ -72,7 +108,7 @@ ResourceSchema.methods.toJSON = function () {
         type: this.type.toJSON(),
         title: this.title,
         imageUrl: this.imageUrl,
-        company:  this.company,
+        company: this.company,
         description: this.description,
         releasedAt: this.releasedAt,
     }

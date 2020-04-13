@@ -9,9 +9,6 @@ import { sendWelcome } from '../../../utils/EmailUtils';
 import { User, Profile, User_type } from '../../../models';
 
 const router = express.Router();
-// const User = mongoose.model('User');
-// const Profile = mongoose.model('Profile');
-// const User_type = mongoose.model('User_type');
 
 router.get('/current', auth.required, (req, res, next) => {
     User.findById(req.payload.id)
@@ -86,6 +83,27 @@ router.post('/type/set/:nickname', auth.required, async (req, res, next) => {
     } catch (e) {
         next(e);
     }
-})
+});
+
+router.get('/users', auth.required, async (req, res, next) => {
+    try {
+        if (!await IsAdminUser(req.payload.id))
+            return res.status(401).json({ error: 'Unauthorized' });
+        var users = await User.paginate({}, {
+            limit: req.query.limit || 10,
+            page: req.query.page || 1,
+            sort: req.query.orderBy || '-createdAt',
+            select: 'nickname type email',
+            populate: {
+                path: 'type',
+                select: 'name'
+            }
+        });
+
+        return res.send(users);
+    } catch (e) {
+        next(e);
+    }
+});
 
 export default router;
