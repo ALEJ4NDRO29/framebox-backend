@@ -3,7 +3,7 @@ const router = express.Router();
 import test from './api/test';
 import api from './api';
 
-const testEnabled = true;
+const testEnabled = false;
 
 
 router.use('/', api);

@@ -88,7 +88,16 @@ router.get('/users', auth.required, async (req, res, next) => {
     try {
         if (!await IsAdminUser(req.payload.id))
             return res.status(401).json({ error: 'Unauthorized' });
-        var users = await User.paginate({}, {
+        
+        var filter = {};
+        var q = req.query.q;
+        if (q) {
+            filter = {
+                title: new RegExp(`${q}`, 'i')
+            }
+        }
+        
+        var users = await User.paginate(filter, {
             limit: req.query.limit || 10,
             page: req.query.page || 1,
             sort: req.query.orderBy || '-createdAt',

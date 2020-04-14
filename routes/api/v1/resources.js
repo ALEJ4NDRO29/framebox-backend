@@ -91,7 +91,15 @@ router.post('/', auth.required, async (req, res, next) => {
 // TODO FILTER
 router.get('/', async (req, res, next) => {
     try {
-        var resources = await Resource.paginate({}, {
+        var filter = {};
+        var q = req.query.q;
+        if (q) {
+            filter = {
+                title: new RegExp(`${q}`, 'i')
+            }
+        }
+
+        var resources = await Resource.paginate(filter, {
             limit: req.query.limit || 10,
             page: req.query.page || 1,
             sort: req.query.orderBy || '-createdAt',
