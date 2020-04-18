@@ -38,7 +38,7 @@ router.post('/register', async (req, res, next) => {
 
         sendWelcome(req.body.user.email, req.body.user.nickname);
 
-        res.send({ user: user.toAuthJson() });
+        return res.send({ user: user.toAuthJson() });
     } catch (e) {
         next(e)
     }
