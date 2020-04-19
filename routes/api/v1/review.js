@@ -232,7 +232,37 @@ router.get('/resource/:slug', async (req, res, next) => {
     }
 });
 
+// GET BY USER (LIST)
+router.get('/nickname/:nickname', async(req, res, next) => {
+    try {
+        var user = await User.findOne({nickname : req.params.nickname}, {profile: 1}).populate({
+            path: 'profile',
+            select: '_id'
+        });
+        var profile = user.profile;
 
+        var reviews = await Review.paginate({ profile }, {
+            limit: req.query.limit || 10,
+            page: req.query.page || 1,
+            sort: req.query.orderBy || '-createdAt',
+            populate: {
+                path: 'profile resource',
+                select: '-description',
+
+                populate: {
+                    path: 'owner',
+                    select: 'nickname'
+                }
+            }
+        });
+
+        return res.send({reviews});
+    } catch (e) {
+        next(e);
+    }
+});
+
+// AVERAGE RATE FROM RESOURCE
 router.get('/resource/:slug/rate', async (req, res, next) => {
     try {
         var resource = await Resource.findOne({slug: req.params.slug}, {_id: 1});

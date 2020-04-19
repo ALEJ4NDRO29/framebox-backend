@@ -53,6 +53,7 @@ ProfileSchema.methods.toJSON = function () {
 ProfileSchema.methods.toDetailsJSON = function () {
     return ({
         name: this.name,
+        karma: this.karma,
         bio: this.bio,
         website: this.website,
         status: this.status,

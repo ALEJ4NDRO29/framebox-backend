@@ -16,6 +16,10 @@ router.put('/nickname/:nickname', auth.required, async (req, res, next) => {
             return res.sendStatus(404);
         }
 
+        if(!user) {
+            return res.sendStatus(404);
+        }
+
         var profile = user.profile;
 
         if (!req.body.profile) {
@@ -88,7 +92,6 @@ router.delete('/me', auth.required, async (req, res, next) => {
 // ADMIN LISTADO VISTO
 router.get('/nickname/:nickname/viewed', auth.required, async (req, res, next) => {
     try {
-        // TODO PAGINATE
         if (!await IsAdminUser(req.payload.id))
             return res.status(401).json({ error: 'Unauthorized' });
 
@@ -379,6 +382,10 @@ router.get('/get/:nickname', async (req, res, next) => {
         var user = await User.findOne({ nickname: req.params.nickname }).populate({
             path: 'profile'
         });
+
+        if(!user) {
+            return res.sendStatus(404);
+        }
 
         var profile = user.profile;
         return res.send({ profile: profile.toDetailsJSON() });
