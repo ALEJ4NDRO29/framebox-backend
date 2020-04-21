@@ -1,5 +1,4 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import auth from "../../authJwt";
 import { User, Resource, Review } from '../../../models';
 const router = express.Router();
@@ -62,6 +61,29 @@ router.post('/', auth.required, async (req, res, next) => {
 
         await review.save();
         return res.send({ review });
+    } catch (e) {
+        next(e);
+    }
+});
+
+router.get('/', async(req, res, next) => {
+    try {
+        var reviews = await Review.paginate({}, {
+            limit: req.query.limit || 10,
+            page: req.query.page || 1,
+            sort: req.query.orderBy || '-createdAt',
+            populate: {
+                path: 'profile resource',
+                select: '-description',
+
+                populate: {
+                    path: 'owner type',
+                    select: 'nickname name'
+                }
+            }
+        });
+        
+        return res.send({reviews});
     } catch (e) {
         next(e);
     }
@@ -250,8 +272,8 @@ router.get('/nickname/:nickname', async(req, res, next) => {
                 select: '-description',
 
                 populate: {
-                    path: 'owner',
-                    select: 'nickname'
+                    path: 'owner type',
+                    select: 'nickname name'
                 }
             }
         });

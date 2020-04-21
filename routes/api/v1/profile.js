@@ -16,7 +16,7 @@ router.put('/nickname/:nickname', auth.required, async (req, res, next) => {
             return res.sendStatus(404);
         }
 
-        if(!user) {
+        if (!user) {
             return res.sendStatus(404);
         }
 
@@ -58,7 +58,7 @@ router.delete('/nickname/:nickname', auth.required, async (req, res, next) => {
         if (!await IsAdminUser(req.payload.id))
             return res.status(401).json({ error: 'Unauthorized' });
 
-        var user = await User.find({ nickname: req.params.nickname }, {_id: 1});
+        var user = await User.find({ nickname: req.params.nickname }, { _id: 1 });
         if (!user) {
             return res.sendStatus(404);
         }
@@ -162,6 +162,44 @@ router.get('/me/viewed', auth.required, async (req, res, next) => {
         next(e);
     }
 });
+
+// TODO : IS VIEWED
+router.get('/me/viewed/:slug', auth.required, async (req, res, next) => {
+    try {
+        var resource = await Resource.findOne({ slug: req.params.slug })
+            .populate({
+                path: 'type',
+                select: 'name'
+            });
+        if (!resource) {
+            return res.sendStatus(404);
+        }
+        
+        var user = await User.findById(req.payload.id)
+        .populate({
+            path: 'profile',
+            populate: {
+                path: 'viewed_content',
+                options: {
+                    limit: 1,
+                },
+                populate: {
+                    path: 'resource',
+                    populate: 'type',
+                    select: ['title', 'slug', 'type', 'releasedAt'],
+                }
+            }
+        });
+
+        var profile = user.profile;
+
+        var found = profile.viewed_content.find(listResource => listResource.resource._id.toString() == resource._id.toString());
+
+        return res.send({viewed: found})
+    } catch (e) {
+        next(e)
+    }
+})
 
 // AÑADIR VISTO USUARIO ACTUAL
 router.post('/me/viewed', auth.required, async (req, res, next) => {
@@ -380,10 +418,14 @@ router.delete('/nickname/:nickname/viewed', auth.required, async (req, res, next
 router.get('/get/:nickname', async (req, res, next) => {
     try {
         var user = await User.findOne({ nickname: req.params.nickname }).populate({
-            path: 'profile'
+            path: 'profile',
+            populate: {
+                path: 'owner',
+                select: 'nickname'
+            }
         });
 
-        if(!user) {
+        if (!user) {
             return res.sendStatus(404);
         }
 

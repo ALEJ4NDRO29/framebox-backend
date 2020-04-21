@@ -51,7 +51,7 @@ ProfileSchema.methods.toJSON = function () {
 }
 
 ProfileSchema.methods.toDetailsJSON = function () {
-    return ({
+    var res = {
         name: this.name,
         karma: this.karma,
         bio: this.bio,
@@ -63,7 +63,13 @@ ProfileSchema.methods.toDetailsJSON = function () {
         lists: {
             size: this.lists.length
         }
-    });
+    }
+
+    if(this.owner && this.owner.nickname) {
+        res.nickname = this.owner.nickname;
+    }
+
+    return res;
 }
 
 mongoose.model('Profile', ProfileSchema);
