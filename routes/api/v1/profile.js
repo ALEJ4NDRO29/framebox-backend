@@ -163,7 +163,7 @@ router.get('/me/viewed', auth.required, async (req, res, next) => {
     }
 });
 
-// TODO : IS VIEWED
+// IS VIEWED
 router.get('/me/viewed/:slug', auth.required, async (req, res, next) => {
     try {
         var resource = await Resource.findOne({ slug: req.params.slug })
