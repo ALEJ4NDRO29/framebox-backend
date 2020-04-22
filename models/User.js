@@ -102,6 +102,7 @@ UserSchema.methods.isAdmin = function () {
 UserSchema.methods.updateProfile = function (profile, updateData) {
     profile.name = updateData.name;
     profile.bio = updateData.bio;
+    profile.status = updateData.status;
     profile.website = updateData.website;
 
     return profile.save();
