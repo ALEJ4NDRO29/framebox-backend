@@ -166,7 +166,7 @@ router.get('/me/viewed', auth.required, async (req, res, next) => {
 // IS VIEWED
 router.get('/me/viewed/:slug', auth.required, async (req, res, next) => {
     try {
-        var resource = await Resource.findOne({ slug: req.params.slug })
+        var resource = await Resource.findOne({ slug: req.params.slug }, { _id: 1 })
             .populate({
                 path: 'type',
                 select: 'name'
@@ -174,28 +174,17 @@ router.get('/me/viewed/:slug', auth.required, async (req, res, next) => {
         if (!resource) {
             return res.sendStatus(404);
         }
-        
-        var user = await User.findById(req.payload.id)
-        .populate({
-            path: 'profile',
-            populate: {
-                path: 'viewed_content',
-                options: {
-                    limit: 1,
-                },
-                populate: {
-                    path: 'resource',
-                    populate: 'type',
-                    select: ['title', 'slug', 'type', 'releasedAt'],
-                }
-            }
-        });
+
+        var user = await User.findById(req.payload.id, { profile: 1 })
+            .populate({
+                path: 'profile'
+            });
 
         var profile = user.profile;
 
-        var found = profile.viewed_content.find(listResource => listResource.resource._id.toString() == resource._id.toString());
+        var found = await List_resource.findOne({ resource, profile });
 
-        return res.send({viewed: found})
+        return res.send({ viewed: found })
     } catch (e) {
         next(e)
     }
@@ -208,20 +197,10 @@ router.post('/me/viewed', auth.required, async (req, res, next) => {
             return res.sendStatus(400);
         }
 
-        var user = await User.findById(req.payload.id)
+        var user = await User.findById(req.payload.id, { profile: 1 })
             .populate({
                 path: 'profile',
-                populate: {
-                    path: 'viewed_content',
-                    options: {
-                        limit: 1,
-                    },
-                    populate: {
-                        path: 'resource',
-                        populate: 'type',
-                        select: ['title', 'slug', 'type', 'releasedAt'],
-                    }
-                }
+                select: 'viewed_content'
             });
 
         var resource = await Resource.findOne({ slug: req.body.resource.slug })
@@ -234,14 +213,18 @@ router.post('/me/viewed', auth.required, async (req, res, next) => {
         }
 
         var profile = user.profile;
-        var viewed = profile.isViewed(resource);
+
+        var viewed = await List_resource.findOne({ profile, resource }).populate({
+            path: 'resource',
+            populate: {
+                path: 'type',
+                select: 'name'
+            }
+        });;
 
         var viewed_content = profile.viewed_content;
 
         if (!viewed) {
-            console.log('viewed_content', viewed_content);
-            // console.log('find', find);
-
             var list_resource = new List_resource();
             list_resource.profile = profile;
             list_resource.resource = resource;
@@ -250,11 +233,13 @@ router.post('/me/viewed', auth.required, async (req, res, next) => {
             viewed_content.push(list_resource);
 
             await profile.save();
+            return res.send({ viewed: list_resource });
+
         } else {
             console.log('Was already seen');
+            return res.send({ viewed: viewed });
         }
 
-        return res.send(list_resource);
     } catch (e) {
         next(e);
     }
@@ -318,27 +303,29 @@ router.delete('/me/viewed', auth.required, async (req, res, next) => {
             return res.sendStatus(400);
         }
 
-        var user = await User.findById(req.payload.id).populate({
+        var user = await User.findById(req.payload.id, {profile: 1}).populate({
             path: 'profile',
-            populate: {
-                path: 'viewed_content',
-            }
+            // populate: {
+            //     path: 'viewed_content',
+            // }
         });
+
         var profile = user.profile;
 
-        // TODO: REUTILIZABLE
-        var selectedResource = await Resource.findOne({ slug: req.body.resource.slug });
-        if (!selectedResource) {
+        var resource = await Resource.findOne({ slug: req.body.resource.slug });
+        if (!resource) {
             return res.sendStatus(404);
         }
 
-        var viewed_content = profile.viewed_content;
+        // var viewed_content = profile.viewed_content;
+        // var selectedViewed = viewed_content.find(element => element.resource._id.toString() === selectedResource._id.toString());
 
-        var selectedViewed = viewed_content.find(element => element.resource._id.toString() === selectedResource._id.toString());
+        var selectedViewed = await List_resource.findOne({profile, resource});
 
-        var tmpProfile;
+        // var tmpProfile;
         if (selectedViewed) {
-            tmpProfile = await Profile.findOneAndUpdate(
+            // tmpProfile = 
+            await Profile.updateOne(
                 { _id: profile._id }, {
                 "$pull": {
                     "viewed_content": selectedViewed._id
@@ -353,11 +340,11 @@ router.delete('/me/viewed', auth.required, async (req, res, next) => {
             console.log('Was not seen');
         }
 
-        if (tmpProfile) {
-            viewed_content = tmpProfile.viewed_content;
-        }
+        // if (tmpProfile) {
+        //     viewed_content = tmpProfile.viewed_content;
+        // }
 
-        return res.send({ viewed_content }); // FIXME : viewed_content No se actualiza al ser borrado
+        return res.sendStatus(200);
     } catch (e) {
         next(e);
     }
