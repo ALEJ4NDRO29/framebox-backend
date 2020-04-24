@@ -45,7 +45,11 @@ router.post('/', auth.required, async (req, res, next) => {
             })
             .populate({
                 path: 'resource',
-                select: '-description'
+                select: '-description',
+                populate: {
+                    path: 'type',
+                    select: 'name'
+                }
             });
 
 
@@ -119,7 +123,11 @@ router.put('/id/:id', auth.required, async (req, res, next) => {
                 }
             }).populate({
                 path: 'resource',
-                select: '-description'
+                select: '-description',
+                populate: {
+                    path: 'type',
+                    select: 'name'
+                }
             });
 
         if (!review) {
@@ -216,7 +224,11 @@ router.get('/me/resource/:slug', auth.required, async (req, res, next) => {
             })
             .populate({
                 path: 'resource',
-                select: '-description'
+                select: '-description',
+                populate: {
+                    path: 'type',
+                    select: 'name'
+                }
             });
 
         return res.send({ review });
@@ -242,8 +254,8 @@ router.get('/resource/:slug', async (req, res, next) => {
                 select: '-description',
 
                 populate: {
-                    path: 'owner',
-                    select: 'nickname'
+                    path: 'owner type',
+                    select: 'nickname name'
                 }
             }
         });

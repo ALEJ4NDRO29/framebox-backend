@@ -2,6 +2,7 @@ import express from 'express';
 import auth from '../../authJwt';
 import { IsAdminUser, removeUserById, removeUserByNickname } from '../../../utils/UsersUtils';
 import { User, Resource, List_resource, Profile } from '../../../models';
+import { increaseKarmaByUserId } from '../../../utils/ProfileUtils';
 const router = express.Router();
 
 
@@ -233,8 +234,9 @@ router.post('/me/viewed', auth.required, async (req, res, next) => {
             viewed_content.push(list_resource);
 
             await profile.save();
-            return res.send({ viewed: list_resource });
+            increaseKarmaByUserId(req.payload.id, 5);
 
+            return res.send({ viewed: list_resource });
         } else {
             console.log('Was already seen');
             return res.send({ viewed: viewed });
@@ -336,6 +338,8 @@ router.delete('/me/viewed', auth.required, async (req, res, next) => {
 
             await selectedViewed.remove();
             await profile.save();
+
+            increaseKarmaByUserId(req.payload.id, -5);
         } else {
             console.log('Was not seen');
         }
