@@ -9,12 +9,12 @@ passport.use(new LocalStrategy({
     usernameField: 'user[email]',
     passwordField: 'user[password]'
 }, function (email, password, done) {
-    console.log('Validate user'.blue);
+    // console.log('Validate user'.blue);
 
     User.findOne({ email: email })
         .populate('type')
         .then(function (user) {
-            console.log("Found user: ".blue + email);
+            // console.log("Found user: ".blue + email);
 
             if (!user || !user.validPassword(password)) {
                 return done(null, false, { errors: { 'email or password': 'is invalid' } });

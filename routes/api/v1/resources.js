@@ -81,7 +81,7 @@ router.post('/', auth.required, async (req, res, next) => {
 
         await resource.save();
 
-        return res.status(201).send(resource);
+        return res.status(201).send({resource});
     } catch (e) {
         next(e);
     }

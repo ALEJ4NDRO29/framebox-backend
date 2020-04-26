@@ -1,6 +1,7 @@
 import express from 'express';
 import auth from "../../authJwt";
 import { User, Resource, Review } from '../../../models';
+import { increaseKarmaByUserId } from '../../../utils/ProfileUtils';
 const router = express.Router();
 
 // TODO : STATS
@@ -55,6 +56,7 @@ router.post('/', auth.required, async (req, res, next) => {
 
         if (!review) {
             review = new Review();
+            increaseKarmaByUserId(req.payload.id, 25);
         } else {
             console.log('Review exists, update');
         }
@@ -182,6 +184,7 @@ router.delete('/id/:id', auth.required, async (req, res, next) => {
 
         if (currentProfileId === reviewProfileId) {
             await review.remove();
+            increaseKarmaByUserId(req.payload.id, -25);
         } else {
             return res.sendStatus(403);
         }
