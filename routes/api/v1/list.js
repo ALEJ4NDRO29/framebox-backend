@@ -71,6 +71,49 @@ router.post('/me', auth.required, async (req, res, next) => {
     }
 });
 
+router.put('/update/:slug', auth.required, async (req, res, next) => {
+    try {
+        var user = await User.findById(req.payload.id, { profile: 1, type: 1 })
+            .populate('type')
+            .populate({
+                path: 'profile',
+                select: '_id'
+            });
+
+        var profile = user.profile;
+
+        var list = await List.findOne({ slug: req.params.slug }).populate({
+            path: 'profile',
+            select: '_id'
+        });
+
+        if (!list) {
+            return res.sendStatus(404);
+        }
+
+        if (!req.body.list.name) {
+            return res.sendStatus(400);
+        }
+
+        if (profile._id.toString() !== list.owner._id.toString()) {
+
+            if(!user.type || user.type.name !== 'Admin') {
+                return res.sendStatus(400);
+            }            
+        }
+
+        list.name = req.body.list.name;
+        list.description = req.body.list.description;
+        list.private = req.body.list.private;
+
+        await list.save();
+        
+        return res.send({list});
+    } catch (e) {
+        next(e);
+    }
+});
+
 // ELIMINAR LISTA
 router.delete('/remove/:slug', auth.required, async (req, res, next) => {
     try {
@@ -127,19 +170,15 @@ router.delete('/remove/:slug', auth.required, async (req, res, next) => {
 // LISTAS DEL USUARIO LOGUEADO
 router.get('/me', auth.required, async (req, res, next) => {
     try {
-        var user = await User.findById(req.payload.id, { profile: 1 }).populate({
-            path: 'profile',
-            populate: {
-                path: 'lists',
-                select: '-content',
-                populate: {
-                    path: 'owner'
-                }
-            }
-        });
-
+        var user = await User.findById(req.payload.id, { profile: 1 });
         var profile = user.profile;
-        var lists = profile.lists;
+        var lists = await List.paginate({ owner: profile }, {
+            limit: req.query.limit || 10,
+            page: req.query.page || 1,
+            select: '-content',
+            sort: req.query.orderBy || '-createdAt',
+            content: -1
+        });
 
         return res.send({ lists });
     } catch (e) {
@@ -200,7 +239,7 @@ router.get('/get/:slug', auth.optional, async (req, res, next) => {
 
             // DEVOLVER SI ES DEL USUARIO LOGUADO
             if (list.owner._id.toString() == user.profile._id.toString()) {
-                console.log(list);
+                // console.log(list);
                 return res.send({ list })
             }
 
