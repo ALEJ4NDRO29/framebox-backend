@@ -76,6 +76,12 @@ SuggestionSchema.methods.toJSON = function () {
         }
     }
 
+    if (this.type && this.type.name) {
+        res.type = {
+            name: this.type.name
+        };
+    }
+
     return res;
 }
 

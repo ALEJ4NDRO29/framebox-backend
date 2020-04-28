@@ -58,6 +58,7 @@ router.post('/add', auth.required, async (req, res, next) => {
         suggestion.description = req.body.resource.description;
         suggestion.imageUrl = req.body.resource.imageUrl;
         suggestion.company = req.body.resource.company;
+        suggestion.releasedAt = req.body.resource.releasedAt;
 
         await suggestion.save();
         if (!user.type || user.type.name !== 'Admin') {
@@ -82,10 +83,10 @@ router.get('/', auth.required, async (req, res, next) => {
         var filter = {};
         if (user.type && user.type.name === 'Admin') {
             // Acceso a todas las sugerencias
-            console.log('Admin');
+            // console.log('Admin');
         } else {
             // Acceso a sus sugerencias
-            console.log('User');
+            // console.log('User');
             filter = { profile: user.profile }
         }
 
@@ -94,13 +95,13 @@ router.get('/', auth.required, async (req, res, next) => {
             page: req.query.page || 1,
             sort: req.query.orderBy || '-createdAt',
             populate: {
-                path: 'state profile',
+                path: 'state profile type',
                 populate: {
                     path: 'owner',
                     select: 'nickname'
                 }
             }
-        })
+        });
         
         return res.send(suggestions);
     } catch (e) {
@@ -185,11 +186,11 @@ router.put('/state/:slug', auth.required, async (req, res, next) => {
             return res.sendStatus(403);
         }
 
-        if (!req.body.type || !req.body.type.name) {
+        if (!req.body.state || !req.body.state.name) {
             return res.sendStatus(400);
         }
 
-        var state = await Suggestion_state.findOne({ name: req.body.type.name });
+        var state = await Suggestion_state.findOne({ name: req.body.state.name });
         if (!state) {
             return res.status(404).send({ error: 'State not found' });
         }
