@@ -97,9 +97,9 @@ router.put('/update/:slug', auth.required, async (req, res, next) => {
 
         if (profile._id.toString() !== list.owner._id.toString()) {
 
-            if(!user.type || user.type.name !== 'Admin') {
+            if (!user.type || user.type.name !== 'Admin') {
                 return res.sendStatus(400);
-            }            
+            }
         }
 
         list.name = req.body.list.name;
@@ -107,8 +107,8 @@ router.put('/update/:slug', auth.required, async (req, res, next) => {
         list.private = req.body.list.private;
 
         await list.save();
-        
-        return res.send({list});
+
+        return res.send({ list });
     } catch (e) {
         next(e);
     }
@@ -186,6 +186,19 @@ router.get('/me', auth.required, async (req, res, next) => {
     }
 });
 
+// LISTAS DE UN USUARIO (SOLO TÍTULOS)
+router.get('/me/title', auth.required, async (req, res, next) => {
+    try {
+        var user = await User.findById(req.payload.id, { profile: 1 });
+        var profile = user.profile;
+
+        var lists = await List.find({ owner: profile }, { name: 1, slug: 1 });
+        return res.send({ lists });
+    } catch (e) {
+        next(e);
+    }
+});
+
 // TODO : FILTER CONTENT
 // https://stackoverflow.com/questions/16325817/in-mongoose-how-to-filter-an-array-of-objects
 
@@ -196,18 +209,20 @@ router.get('/get/:slug', auth.optional, async (req, res, next) => {
         // GUEST -> ENVIAR LISTADO SOLO SI ES PÚBLICO
         // USER  -> ENVIAR LISTADO SI ES PÚBLICO O ES SUYO
 
-        var list = await List.findOne({ slug: req.params.slug })
-            .populate({
-                path: 'content',
-                populate: {
-                    path: 'resource',
-                    select: 'slug title releasedAt',
-                    populate: {
-                        path: 'type',
-                        select: 'name'
-                    }
-                }
-            })
+        // CONTENIDO DE LA LISTA CON OTRA PETICIÓN 
+        // PARA TENER LOS DATOS PAGINADOS
+        var list = await List.findOne({ slug: req.params.slug }, { content: 0 })
+            // .populate({
+            //     path: 'content',
+            //     populate: {
+            //         path: 'resource',
+            //         select: 'slug title releasedAt',
+            //         populate: {
+            //             path: 'type',
+            //             select: 'name'
+            //         }
+            //     }
+            // })
             .populate({
                 path: 'owner',
                 select: 'owner',
