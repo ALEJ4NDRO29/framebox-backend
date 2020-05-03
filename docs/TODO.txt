@@ -1,1 +1,1 @@
-Eventos de karma
+- Límite máximo a las paginaciones
