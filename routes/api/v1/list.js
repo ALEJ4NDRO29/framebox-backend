@@ -3,6 +3,7 @@ import auth from '../../authJwt';
 const router = express.Router();
 import { IsAdminUser } from '../../../utils/UsersUtils';
 import { User, List, Profile, Resource, List_resource } from '../../../models';
+import { increaseKarmaByUserId } from '../../../utils/ProfileUtils';
 
 // ADMIN CREA LISTA A USUARIO
 router.post('/create/to/:nickname', auth.required, async (req, res, next) => {
@@ -64,6 +65,8 @@ router.post('/me', auth.required, async (req, res, next) => {
 
         profile.lists.push(list);
         await profile.save();
+
+        increaseKarmaByUserId(req.payload.id, 10);
 
         return res.status(201).send({ list });
     } catch (e) {
@@ -346,6 +349,8 @@ router.post('/content/:slug', auth.required, async (req, res, next) => {
             actualContent.push(listResource);
 
             await list.save();
+
+            increaseKarmaByUserId(req.payload.id, 5);
         } else {
             console.log('Was already on the list');
         }
@@ -439,6 +444,9 @@ router.delete('/content/:slug', auth.required, async (req, res, next) => {
 
             await elementInList.remove();
             // return res.send({ list: newList })
+            
+            increaseKarmaByUserId(req.payload.id, -5);
+
             return res.sendStatus(200);
         } else {
             console.log('Not in list');

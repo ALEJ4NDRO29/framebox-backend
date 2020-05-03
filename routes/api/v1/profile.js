@@ -234,7 +234,7 @@ router.post('/me/viewed', auth.required, async (req, res, next) => {
             viewed_content.push(list_resource);
 
             await profile.save();
-            increaseKarmaByUserId(req.payload.id, 5);
+            increaseKarmaByUserId(req.payload.id, 10);
 
             return res.send({ viewed: list_resource });
         } else {
@@ -339,7 +339,7 @@ router.delete('/me/viewed', auth.required, async (req, res, next) => {
             await selectedViewed.remove();
             await profile.save();
 
-            increaseKarmaByUserId(req.payload.id, -5);
+            increaseKarmaByUserId(req.payload.id, -10);
         } else {
             console.log('Was not seen');
         }

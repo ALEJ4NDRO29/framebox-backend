@@ -3,6 +3,7 @@ import auth from '../../authJwt';
 import { IsAdminUser } from '../../../utils/UsersUtils';
 import { sendThanksSuggestion } from '../../../utils/EmailUtils';
 import { Suggestion_state, Suggestion, User, Resource_type } from '../../../models';
+import { increaseKarmaByUserId } from '../../../utils/ProfileUtils';
 const router = express.Router();
 
 // POSIBLE STATES
@@ -64,6 +65,8 @@ router.post('/add', auth.required, async (req, res, next) => {
         if (!user.type || user.type.name !== 'Admin') {
             sendThanksSuggestion(user.email, user.nickname, req.body.resource.title);
         }
+
+        increaseKarmaByUserId(req.payload.id, 15);
 
         return res.send({ suggestion });
     } catch (e) {

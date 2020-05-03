@@ -56,7 +56,7 @@ router.post('/', auth.required, async (req, res, next) => {
 
         if (!review) {
             review = new Review();
-            increaseKarmaByUserId(req.payload.id, 25);
+            increaseKarmaByUserId(req.payload.id, 40);
         } else {
             console.log('Review exists, update');
         }
@@ -184,7 +184,7 @@ router.delete('/id/:id', auth.required, async (req, res, next) => {
 
         if (currentProfileId === reviewProfileId) {
             await review.remove();
-            increaseKarmaByUserId(req.payload.id, -25);
+            increaseKarmaByUserId(req.payload.id, -40);
         } else {
             return res.sendStatus(403);
         }

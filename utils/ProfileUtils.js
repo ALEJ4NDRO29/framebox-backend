@@ -12,7 +12,7 @@ async function updateKarma(user, qty) {
 
 
 /**
- * @param {String} id - User nickname
+ * @param {String} id - User id
  * @param {Number} qty - Quantity to update
  */
 export async function increaseKarmaByUserId(id, qty) {
