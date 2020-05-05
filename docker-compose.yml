@@ -5,12 +5,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: framebox
+    container_name: framebox-backend
     restart: always
     tty: true
     working_dir: /app
-    volumes:
-      - ./:/app
+    environment: 
+      - ADMIN_NICKNAME=admin
+      - ADMIN_EMAIL=admin@admin.com
+      - ADMIN_PASSWORD=admin
     ports: 
       - 3000:3000
     networks: 
@@ -20,7 +22,7 @@ services:
         
   mongodb: 
     image: mongo:4.2.5
-    container_name: frameboxmongodb
+    container_name: framebox-mongodb
     restart: always
     tty: true
     volumes:
