@@ -1,7 +1,12 @@
 import mongoose from 'mongoose';
 
 // 'mongodb://localhost/framebox' process.env.DH_HOST
-mongoose.connect(`mongodb://localhost/framebox`, { useNewUrlParser: true, useUnifiedTopology: true });
+setTimeout(() => {
+    var connectionPath = `mongodb://${process.env.DH_HOST}/framebox`;
+    console.log(connectionPath);
+    mongoose.connect(connectionPath, { useNewUrlParser: true, useUnifiedTopology: true });
+}, 2000);
+
 mongoose.set('useCreateIndex', true);
 mongoose.set('useFindAndModify', false);
 
@@ -64,7 +69,7 @@ async function checkUsers() {
 
     console.log("Check AdminUser".grey);
 
-    var adminUser = await User.findOne({nickname: process.env.ADMIN_NICKNAME || 'admin'});
+    var adminUser = await User.findOne({ nickname: process.env.ADMIN_NICKNAME || 'admin' });
 
     // Crear usuario admin si no existe
     if (!adminUser) {
@@ -72,7 +77,7 @@ async function checkUsers() {
         adminUser = new User();
 
         adminUser.nickname = process.env.ADMIN_NICKNAME || 'admin';
-        adminUser.email =  process.env.ADMIN_EMAIL || 'admin@admin.com';
+        adminUser.email = process.env.ADMIN_EMAIL || 'admin@admin.com';
         adminUser.type = adminType;
         adminUser.setPassword(process.env.ADMIN_PASSWORD || 'admin');
         adminUser.createProfile();
@@ -87,7 +92,7 @@ async function checkUsers() {
 
 async function checkResType(typeName) {
     console.log(`Check ${typeName} type`.grey);
-    var type = await Resource_type.findOne({name: typeName});
+    var type = await Resource_type.findOne({ name: typeName });
     if (!type) {
         console.log(`Create ${typeName} type`.grey);
         type = new Resource_type();
@@ -98,7 +103,7 @@ async function checkResType(typeName) {
 
 async function checkSuggestionState(stateName) {
     console.log(`Check ${stateName} suggestion state`.grey);
-    var state = await Suggestion_state.findOne({name: stateName});
+    var state = await Suggestion_state.findOne({ name: stateName });
     if (!state) {
         console.log(`Create ${stateName} state`.grey);
         state = new Suggestion_state();
