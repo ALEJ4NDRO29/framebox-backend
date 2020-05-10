@@ -1,6 +1,4 @@
-# build
-
-FROM node:12.16.3-alpine3.9 as build-stage
+FROM node:12.16.3-alpine3.9
 WORKDIR /app
 
 COPY package*.json ./

@@ -15,4 +15,8 @@ router.use('/list', list);
 router.use('/review', review);
 router.use('/suggestion', suggestion);
 
+router.get('/echo/:echo', (req, res) => {
+    return res.send(req.params.echo)
+});
+
 export default router;

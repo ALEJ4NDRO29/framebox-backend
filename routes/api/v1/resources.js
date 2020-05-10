@@ -3,7 +3,7 @@ import auth from "../../authJwt";
 import { IsAdminUser } from "../../../utils/UsersUtils";
 const router = express.Router();
 
-import { Resource, Resource_type } from "../../../models";
+import { Resource, Resource_type, Review, List_resource } from "../../../models";
 
 // const Resource = mongoose.model('Resource');
 // const Resource_type = mongoose.model('Resource_type');
@@ -81,7 +81,7 @@ router.post('/', auth.required, async (req, res, next) => {
 
         await resource.save();
 
-        return res.status(201).send({resource});
+        return res.status(201).send({ resource });
     } catch (e) {
         next(e);
     }
@@ -178,6 +178,9 @@ router.delete('/slug/:slug', auth.required, async (req, res, next) => {
         if (!resource) {
             return res.sendStatus(404);
         }
+
+        await List_resource.deleteMany({ resource });
+        await Review.deleteMany({ resource });
 
         await resource.remove();
 

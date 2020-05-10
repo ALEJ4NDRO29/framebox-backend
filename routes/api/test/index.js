@@ -8,7 +8,4 @@ const router = express.Router();
     router.use('/profile', profile);
     router.use('/fake', fake);
 
-    router.get('/echo/:echo', (req, res) => {
-        return res.send(req.params.echo)
-    });
 export default router;
