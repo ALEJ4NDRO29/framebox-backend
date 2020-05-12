@@ -122,7 +122,7 @@ router.get('/nickname/:nickname/viewed', auth.required, async (req, res, next) =
             sort: '-createdAt',
             populate: {
                 path: 'resource',
-                select: ['title', 'slug', 'type', 'releasedAt'],
+                select: 'title slug type releasedAt imageUrl',
                 populate: {
                     path: 'type',
                     select: 'name'
@@ -150,7 +150,7 @@ router.get('/me/viewed', auth.required, async (req, res, next) => {
             sort: '-createdAt',
             populate: {
                 path: 'resource',
-                select: ['title', 'slug', 'type', 'releasedAt'],
+                select: 'title slug type releasedAt imageUrl',
                 populate: {
                     path: 'type',
                     select: 'name'
