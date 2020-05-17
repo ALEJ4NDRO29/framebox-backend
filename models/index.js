@@ -46,6 +46,7 @@ checkResType('Movie');
 checkResType('Serie');
 checkResType('Music');
 checkResType('Videogame');
+checkResType('Book');
 
 checkSuggestionState('Received');
 checkSuggestionState('In_course');
